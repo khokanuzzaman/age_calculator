@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+      Debug-only: required for Flutter/Dart VM service (localhost socket).
+      Safe for development; not included in release manifest.
+      If you want strict no-network debugging, remove/comment this line.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>

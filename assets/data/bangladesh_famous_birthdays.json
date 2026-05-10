@@ -1,0 +1,102 @@
+[
+  {
+    "date": "03-17",
+    "name": "Sheikh Mujibur Rahman",
+    "birthYear": 1920,
+    "profession": "Political leader",
+    "description": "Founding leader of Bangladesh and the first President of Bangladesh.",
+    "region": "Bangladesh",
+    "type": "politics",
+    "source": "local"
+  },
+  {
+    "date": "12-09",
+    "name": "Begum Rokeya",
+    "birthYear": 1880,
+    "profession": "Writer and social reformer",
+    "description": "Bengali feminist thinker, writer, educator, and social reformer.",
+    "region": "Bangladesh",
+    "type": "education",
+    "source": "local"
+  },
+  {
+    "date": "08-29",
+    "name": "Zainul Abedin",
+    "birthYear": 1914,
+    "profession": "Artist",
+    "description": "Bangladeshi painter known for his famine sketches and contribution to modern art.",
+    "region": "Bangladesh",
+    "type": "arts",
+    "source": "local"
+  },
+  {
+    "date": "11-13",
+    "name": "Humayun Ahmed",
+    "birthYear": 1948,
+    "profession": "Writer and filmmaker",
+    "description": "Popular Bangladeshi novelist, dramatist, screenwriter, and filmmaker.",
+    "region": "Bangladesh",
+    "type": "literature",
+    "source": "local"
+  },
+  {
+    "date": "01-19",
+    "name": "Ziaur Rahman",
+    "birthYear": 1936,
+    "profession": "Military officer and politician",
+    "description": "Former President of Bangladesh.",
+    "region": "Bangladesh",
+    "type": "politics",
+    "source": "local"
+  },
+  {
+    "date": "09-28",
+    "name": "Sheikh Hasina",
+    "birthYear": 1947,
+    "profession": "Politician",
+    "description": "Bangladeshi politician and former Prime Minister of Bangladesh.",
+    "region": "Bangladesh",
+    "type": "politics",
+    "source": "local"
+  },
+  {
+    "date": "07-11",
+    "name": "Muhammad Yunus",
+    "birthYear": 1940,
+    "profession": "Economist and social entrepreneur",
+    "description": "Bangladeshi economist, social entrepreneur, and Nobel Peace Prize laureate.",
+    "region": "Bangladesh",
+    "type": "economics",
+    "source": "local"
+  },
+  {
+    "date": "01-23",
+    "name": "Subhas Chandra Bose",
+    "birthYear": 1897,
+    "profession": "Political leader",
+    "description": "Prominent leader in the Indian independence movement, widely remembered in Bengal.",
+    "region": "Bengal/India",
+    "type": "history",
+    "source": "local"
+  },
+  {
+    "date": "05-07",
+    "name": "Rabindranath Tagore",
+    "birthYear": 1861,
+    "profession": "Poet and writer",
+    "description": "Bengali poet, writer, composer, and Nobel laureate.",
+    "region": "Bengal/India",
+    "type": "literature",
+    "source": "local"
+  },
+  {
+    "date": "05-25",
+    "name": "Kazi Nazrul Islam",
+    "birthYear": 1899,
+    "profession": "Poet",
+    "description": "National poet of Bangladesh, known as the Rebel Poet.",
+    "region": "Bangladesh/Bengal",
+    "type": "literature",
+    "source": "local"
+  }
+]

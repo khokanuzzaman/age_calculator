@@ -1,0 +1,83 @@
+[
+  {
+    "date": "02-21",
+    "year": 1952,
+    "title": "Language Movement Day",
+    "description": "Students and activists protested for recognition of Bangla as a state language.",
+    "region": "Bangladesh",
+    "type": "national",
+    "source": "local"
+  },
+  {
+    "date": "03-07",
+    "year": 1971,
+    "title": "Historic 7 March Speech",
+    "description": "Sheikh Mujibur Rahman delivered the historic 7 March speech in Dhaka.",
+    "region": "Bangladesh",
+    "type": "history",
+    "source": "local"
+  },
+  {
+    "date": "03-17",
+    "year": 1920,
+    "title": "Birth anniversary of Sheikh Mujibur Rahman",
+    "description": "Sheikh Mujibur Rahman, founding leader of Bangladesh, was born on this day.",
+    "region": "Bangladesh",
+    "type": "national",
+    "source": "local"
+  },
+  {
+    "date": "03-26",
+    "year": 1971,
+    "title": "Independence Day of Bangladesh",
+    "description": "Bangladesh observes Independence Day on this date.",
+    "region": "Bangladesh",
+    "type": "national",
+    "source": "local"
+  },
+  {
+    "date": "04-14",
+    "year": null,
+    "title": "Pahela Baishakh",
+    "description": "Bengali New Year is widely celebrated in Bangladesh.",
+    "region": "Bangladesh",
+    "type": "culture",
+    "source": "local"
+  },
+  {
+    "date": "05-25",
+    "year": 1899,
+    "title": "Birth anniversary of Kazi Nazrul Islam",
+    "description": "Kazi Nazrul Islam, the national poet of Bangladesh, was born on this day.",
+    "region": "Bangladesh/Bengal",
+    "type": "literature",
+    "source": "local"
+  },
+  {
+    "date": "08-15",
+    "year": 1975,
+    "title": "National Mourning Day of Bangladesh",
+    "description": "Bangladesh observes National Mourning Day on this date.",
+    "region": "Bangladesh",
+    "type": "national",
+    "source": "local"
+  },
+  {
+    "date": "12-14",
+    "year": 1971,
+    "title": "Martyred Intellectuals Day",
+    "description": "Bangladesh observes Martyred Intellectuals Day to remember intellectuals killed during the Liberation War.",
+    "region": "Bangladesh",
+    "type": "national",
+    "source": "local"
+  },
+  {
+    "date": "12-16",
+    "year": 1971,
+    "title": "Victory Day of Bangladesh",
+    "description": "Bangladesh observes Victory Day on this date.",
+    "region": "Bangladesh",
+    "type": "national",
+    "source": "local"
+  }
+]
