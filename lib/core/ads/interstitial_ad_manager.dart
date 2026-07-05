@@ -15,7 +15,12 @@ class InterstitialAdManager {
 
   InterstitialAd? _ad;
   bool _loading = false;
+  bool _isShowing = false;
   int _actionCount = 0;
+
+  /// Whether an interstitial is currently on screen. Used by
+  /// [AppOpenAdManager] to avoid stacking two full-screen ads.
+  bool get isShowing => _isShowing;
 
   void preload() {
     if (_ad != null || _loading) {
@@ -60,16 +65,19 @@ class InterstitialAdManager {
     }
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
+        _isShowing = false;
         ad.dispose();
         _ad = null;
         preload();
       },
       onAdFailedToShowFullScreenContent: (ad, _) {
+        _isShowing = false;
         ad.dispose();
         _ad = null;
         preload();
       },
     );
+    _isShowing = true;
     ad.show();
     _ad = null;
   }

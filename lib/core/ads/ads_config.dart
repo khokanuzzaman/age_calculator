@@ -21,6 +21,8 @@ class AdsConfig {
       'ca-app-pub-3940256099942544/6300978111';
   static const String _testInterstitialAndroid =
       'ca-app-pub-3940256099942544/1033173712';
+  static const String _testAppOpenAndroid =
+      'ca-app-pub-3940256099942544/9257395921';
 
   // --- Real ad unit IDs for me.khokan.agecalculator (used when useTestAds == false) ---
   // AdMob App ID: ca-app-pub-1928074644821911~3546479443 (set in AndroidManifest).
@@ -28,6 +30,9 @@ class AdsConfig {
       'ca-app-pub-1928074644821911/5243694175';
   static const String _prodInterstitialAndroid =
       'ca-app-pub-1928074644821911/5813550139';
+  // TODO(owner): create an App Open ad unit in AdMob for me.khokan.agecalculator
+  // and paste its real unit ID here (falls back to the TEST unit until then).
+  static const String _prodAppOpenAndroid = 'YOUR_REAL_APP_OPEN_AD_UNIT_ID';
 
   static String get bannerAdUnitId {
     if (useTestAds) {
@@ -45,10 +50,21 @@ class AdsConfig {
         : _testInterstitialAndroid;
   }
 
+  static String get appOpenAdUnitId {
+    if (useTestAds) {
+      return _testAppOpenAndroid;
+    }
+    return Platform.isAndroid ? _prodAppOpenAndroid : _testAppOpenAndroid;
+  }
+
   /// Show an interstitial at most once every [interstitialEveryNActions]
   /// qualifying actions — keeps the experience respectful (competitors get
   /// hammered in reviews for ad spam).
   static const int interstitialEveryNActions = 4;
+
+  /// Minimum time between App Open ads, so returning to the foreground
+  /// repeatedly doesn't spam the user.
+  static const Duration appOpenMinInterval = Duration(minutes: 4);
 
   /// Devices that should always receive TEST ads (even though real ad unit IDs
   /// are used). This lets the owner test safely — tapping a *real* ad on your

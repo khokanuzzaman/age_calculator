@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/app.dart';
 import 'app/theme/theme_mode_notifier.dart';
 import 'core/ads/ads_config.dart';
+import 'core/ads/app_open_ad_manager.dart';
 import 'core/ads/interstitial_ad_manager.dart';
 import 'core/notifications/notification_service.dart';
 
@@ -31,6 +32,7 @@ Future<void> main() async {
     }
     await MobileAds.instance.initialize();
     InterstitialAdManager.instance.preload();
+    AppOpenAdManager.instance.load();
   } catch (_) {
     // Ads are non-critical; never block app startup on them.
   }

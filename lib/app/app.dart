@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/ads/ads_provider.dart';
+import '../core/ads/app_open_ad_manager.dart';
 import '../core/constants/app_constants.dart';
 import '../features/about/presentation/screens/about_screen.dart';
 import '../features/age_calculator/presentation/screens/home_screen.dart'
@@ -17,11 +19,39 @@ import 'app_routes.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme_mode_notifier.dart';
 
-class AgeCalculatorApp extends ConsumerWidget {
+class AgeCalculatorApp extends ConsumerStatefulWidget {
   const AgeCalculatorApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AgeCalculatorApp> createState() => _AgeCalculatorAppState();
+}
+
+class _AgeCalculatorAppState extends ConsumerState<AgeCalculatorApp> {
+  late final AppLifecycleListener _lifecycleListener;
+
+  @override
+  void initState() {
+    super.initState();
+    // Show an App Open ad when the app returns to the foreground (and on the
+    // cold-start resume transition when an ad is already loaded). Guards inside
+    // the manager prevent stacking with interstitials and enforce the cap.
+    _lifecycleListener = AppLifecycleListener(onResume: _onResume);
+  }
+
+  void _onResume() {
+    AppOpenAdManager.instance.showIfAvailable(
+      adsEnabled: ref.read(adsEnabledProvider),
+    );
+  }
+
+  @override
+  void dispose() {
+    _lifecycleListener.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp(
