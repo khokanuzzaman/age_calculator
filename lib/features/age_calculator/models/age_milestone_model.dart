@@ -43,3 +43,25 @@ class BirthdayDetails {
   final String nextBirthdayWeekday;
   final int daysUntilNextBirthday;
 }
+
+/// The user's next round-number "days lived" milestone (e.g. 10,000 days).
+class DayMilestone {
+  const DayMilestone({required this.days, required this.date});
+
+  /// The milestone count, e.g. 10000.
+  final int days;
+
+  /// The calendar date (date-only) the user reaches [days] days lived.
+  final DateTime date;
+}
+
+/// A single lead-time reminder before the user's next birthday.
+class BirthdayLead {
+  const BirthdayLead({required this.daysBefore, required this.date});
+
+  /// How many days before the birthday this reminder fires (0 = the day itself).
+  final int daysBefore;
+
+  /// The date-only day the reminder should fire on.
+  final DateTime date;
+}

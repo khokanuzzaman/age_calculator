@@ -154,6 +154,56 @@ class AgeCalculationUtils {
     return ratio.clamp(0, 1) * 100;
   }
 
+  /// The user's next round-number "days lived" milestone (next multiple of
+  /// [step], e.g. 10000, 11000...). Today counts if it lands exactly on a
+  /// milestone; otherwise the next future multiple is returned. A newborn's
+  /// first milestone is [step].
+  static DayMilestone nextDayMilestone(
+    DateTime birthDate,
+    DateTime now, {
+    int step = 1000,
+  }) {
+    final birth = AppDateUtils.dateOnly(birthDate);
+    final today = AppDateUtils.dateOnly(now);
+    final lived = today.difference(birth).inDays;
+
+    final int targetDays;
+    if (lived < step) {
+      targetDays = step;
+    } else if (lived % step == 0) {
+      targetDays = lived;
+    } else {
+      targetDays = ((lived ~/ step) + 1) * step;
+    }
+
+    return DayMilestone(
+      days: targetDays,
+      // Constructor arithmetic (not Duration) so the result stays at local
+      // midnight and never drifts across DST boundaries.
+      date: DateTime(birth.year, birth.month, birth.day + targetDays),
+    );
+  }
+
+  /// Lead-time reminder dates before the user's next birthday. Reuses
+  /// [nextBirthday] (which rolls over to next year once this year's has
+  /// passed), so every returned date is on or before that upcoming birthday.
+  static List<BirthdayLead> birthdayCountdownLeads(
+    DateTime birthDate,
+    DateTime now, {
+    List<int> leadDays = const [7, 1, 0],
+  }) {
+    final today = AppDateUtils.dateOnly(now);
+    final bday = nextBirthday(birthDate, today);
+    return leadDays
+        .map(
+          (d) => BirthdayLead(
+            daysBefore: d,
+            date: DateTime(bday.year, bday.month, bday.day - d),
+          ),
+        )
+        .toList(growable: false);
+  }
+
   static String buildShareText({
     required int years,
     required int months,

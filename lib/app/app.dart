@@ -5,6 +5,7 @@ import '../core/ads/ads_provider.dart';
 import '../core/ads/app_open_ad_manager.dart';
 import '../core/constants/app_constants.dart';
 import '../features/about/presentation/screens/about_screen.dart';
+import '../features/age_calculator/application/age_calculator_notifier.dart';
 import '../features/age_calculator/presentation/screens/home_screen.dart'
     as age_calculator;
 import '../features/age_difference/screens/age_difference_screen.dart';
@@ -13,6 +14,7 @@ import '../features/famous_birthdays/screens/famous_birthdays_screen.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/leap_year/screens/leap_year_screen.dart';
 import '../features/on_this_day/screens/on_this_day_screen.dart';
+import '../features/saved_birthdays/providers/reminders_provider.dart';
 import '../features/saved_birthdays/screens/saved_birthdays_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 import 'app_routes.dart';
@@ -53,6 +55,17 @@ class _AgeCalculatorAppState extends ConsumerState<AgeCalculatorApp> {
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
+
+    // Whenever the primary birth date is set/changed, (re)schedule the user's
+    // own birthday countdown + day-milestone reminders. Gated behind the
+    // reminders toggle inside the notifier.
+    ref.listen<AgeCalculatorState>(ageCalculatorProvider, (previous, next) {
+      if (previous?.birthDate != next.birthDate) {
+        ref
+            .read(remindersEnabledProvider.notifier)
+            .setOwnBirthDate(next.birthDate);
+      }
+    });
 
     return MaterialApp(
       title: AppStrings.appName,
