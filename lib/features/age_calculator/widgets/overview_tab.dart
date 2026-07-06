@@ -5,6 +5,7 @@ import '../models/age_milestone_model.dart';
 import 'birthday_weekday_card.dart';
 import 'life_facts_card.dart';
 import 'life_stats_card.dart';
+import 'numerology_card.dart';
 import 'zodiac_card.dart';
 
 class OverviewTab extends StatelessWidget {
@@ -27,6 +28,8 @@ class OverviewTab extends StatelessWidget {
         LifeStatsCard(stats: stats),
         const SizedBox(height: AppSpacing.base),
         ZodiacCard(birthDate: birthDate),
+        const SizedBox(height: AppSpacing.base),
+        NumerologyCard(birthDate: birthDate),
         const SizedBox(height: AppSpacing.base),
         LifeFactsCard(totalDays: stats.totalDays),
         const SizedBox(height: AppSpacing.base),
