@@ -154,6 +154,18 @@ class AgeCalculationUtils {
     return ratio.clamp(0, 1) * 100;
   }
 
+  /// Pure display data for the home-screen widget. Reuses [AppDateUtils
+  /// .calculateAge] for the age and days-until-next-birthday.
+  static AgeWidgetData widgetData(DateTime birthDate, DateTime now) {
+    final result = AppDateUtils.calculateAge(birthDate, now);
+    final years = result.years;
+    return AgeWidgetData(
+      years: years,
+      ageText: '$years ${years == 1 ? 'year' : 'years'}',
+      daysUntilNextBirthday: result.daysUntilNextBirthday,
+    );
+  }
+
   /// The user's next round-number "days lived" milestone (next multiple of
   /// [step], e.g. 10000, 11000...). Today counts if it lands exactly on a
   /// milestone; otherwise the next future multiple is returned. A newborn's

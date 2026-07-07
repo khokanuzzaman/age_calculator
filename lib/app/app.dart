@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/ads/ads_provider.dart';
 import '../core/ads/app_open_ad_manager.dart';
 import '../core/constants/app_constants.dart';
+import '../core/widgets/home_widget_service.dart';
 import '../features/about/presentation/screens/about_screen.dart';
 import '../features/age_calculator/application/age_calculator_notifier.dart';
 import '../features/age_calculator/presentation/screens/home_screen.dart'
@@ -64,6 +65,8 @@ class _AgeCalculatorAppState extends ConsumerState<AgeCalculatorApp> {
         ref
             .read(remindersEnabledProvider.notifier)
             .setOwnBirthDate(next.birthDate);
+        // Keep the home-screen widget in sync with the primary birth date.
+        ref.read(homeWidgetServiceProvider).setBirthDate(next.birthDate);
       }
     });
 

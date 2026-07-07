@@ -55,6 +55,22 @@ class DayMilestone {
   final DateTime date;
 }
 
+/// Display data for the home-screen widget: a formatted age plus the number of
+/// days until the next birthday.
+class AgeWidgetData {
+  const AgeWidgetData({
+    required this.years,
+    required this.ageText,
+    required this.daysUntilNextBirthday,
+  });
+
+  final int years;
+
+  /// e.g. "34 years" (or "1 year").
+  final String ageText;
+  final int daysUntilNextBirthday;
+}
+
 /// A single lead-time reminder before the user's next birthday.
 class BirthdayLead {
   const BirthdayLead({required this.daysBefore, required this.date});

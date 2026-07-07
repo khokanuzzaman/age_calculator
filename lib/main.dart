@@ -10,6 +10,7 @@ import 'core/ads/ads_config.dart';
 import 'core/ads/app_open_ad_manager.dart';
 import 'core/ads/interstitial_ad_manager.dart';
 import 'core/notifications/notification_service.dart';
+import 'core/widgets/home_widget_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +22,13 @@ Future<void> main() async {
     await NotificationService.instance.init();
   } catch (_) {
     // Notifications are non-critical; the app still works without them.
+  }
+
+  // Best-effort: refresh the home-screen widget with today's age/countdown.
+  try {
+    await HomeWidgetService(sharedPreferences).refresh();
+  } catch (_) {
+    // The widget is optional; never block startup on it.
   }
 
   // Best-effort: initialize AdMob and preload the first interstitial.
