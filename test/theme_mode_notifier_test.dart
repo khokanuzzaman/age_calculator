@@ -20,8 +20,16 @@ void main() {
   }
 
   group('ThemeModeNotifier', () {
-    test('defaults to system mode when no value is stored', () async {
+    test('defaults to dark mode when no value is stored', () async {
       final container = await createContainer();
+
+      expect(container.read(themeModeProvider), ThemeMode.dark);
+    });
+
+    test('restores system mode when explicitly stored', () async {
+      final container = await createContainer(
+        preferences: const {'theme_mode': 'system'},
+      );
 
       expect(container.read(themeModeProvider), ThemeMode.system);
     });

@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,6 +12,7 @@ import 'app/app.dart';
 import 'app/theme/theme_mode_notifier.dart';
 import 'core/ads/ads_config.dart';
 import 'core/ads/app_open_ad_manager.dart';
+import 'core/ads/consent_service.dart';
 import 'core/ads/interstitial_ad_manager.dart';
 import 'core/notifications/notification_service.dart';
 import 'core/widgets/home_widget_service.dart';
@@ -31,8 +36,44 @@ Future<void> main() async {
     // The widget is optional; never block startup on it.
   }
 
-  // Best-effort: initialize AdMob and preload the first interstitial.
+  runApp(
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+      ],
+      child: const AgeCalculatorApp(),
+    ),
+  );
+
+  // Runs after the first frame so the iOS ATT system dialog has a window to
+  // attach to, and so ad setup never delays the UI from appearing.
+  unawaited(_initAds());
+}
+
+/// Best-effort: runs the UMP consent flow (EEA/UK), requests App Tracking
+/// Transparency on iOS (so AdMob can serve personalized ads once granted),
+/// then — only if the user's consent status allows it — initializes AdMob
+/// and preloads the first interstitial/app-open ad.
+Future<void> _initAds() async {
   try {
+    await ConsentService.instance.requestConsentIfNeeded();
+
+    if (Platform.isIOS) {
+      final status =
+          await AppTrackingTransparency.trackingAuthorizationStatus;
+      if (status == TrackingStatus.notDetermined) {
+        // Give the just-launched UI a moment to settle before the system
+        // prompt appears, per Apple's guidance.
+        await Future.delayed(const Duration(milliseconds: 500));
+        await AppTrackingTransparency.requestTrackingAuthorization();
+      }
+    }
+
+    final canRequestAds = await ConsentInformation.instance.canRequestAds();
+    if (!ConsentService.shouldInitializeAds(canRequestAds: canRequestAds)) {
+      return;
+    }
+
     if (AdsConfig.testDeviceIds.isNotEmpty) {
       await MobileAds.instance.updateRequestConfiguration(
         RequestConfiguration(testDeviceIds: AdsConfig.testDeviceIds),
@@ -44,13 +85,4 @@ Future<void> main() async {
   } catch (_) {
     // Ads are non-critical; never block app startup on them.
   }
-
-  runApp(
-    ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
-      ],
-      child: const AgeCalculatorApp(),
-    ),
-  );
 }

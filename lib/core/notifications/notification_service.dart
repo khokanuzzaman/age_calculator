@@ -55,7 +55,14 @@ class NotificationService {
     }
 
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosInit = DarwinInitializationSettings();
+    // Don't auto-prompt on init — permission is requested contextually via
+    // [requestPermission] when the user opts into reminders, so it never
+    // races the iOS App Tracking Transparency dialog shown at launch.
+    const iosInit = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
     await _plugin.initialize(
       const InitializationSettings(android: androidInit, iOS: iosInit),
     );

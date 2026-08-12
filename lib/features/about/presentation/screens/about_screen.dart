@@ -47,7 +47,7 @@ class AboutScreen extends StatelessWidget {
                                     AppRadius.lg,
                                   ),
                                   child: Image.asset(
-                                    'assets/icons/app_logo.png',
+                                    'assets/icons/app_icon_full_bleed.png',
                                     width: 52,
                                     height: 52,
                                     fit: BoxFit.cover,

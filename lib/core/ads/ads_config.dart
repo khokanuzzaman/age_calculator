@@ -16,6 +16,14 @@ class AdsConfig {
 
   static const bool useTestAds = false;
 
+  /// Suppresses [BannerAdWidget] entirely — it neither requests nor mounts
+  /// an ad, so no "Test mode" overlay and no reserved layout space appear.
+  /// For capturing clean App Store marketing screenshots only.
+  ///
+  /// ⚠️ Must stay `false` in any release build — flip locally for a capture
+  /// session, then revert before shipping.
+  static const bool kDebugHideBannerAd = false;
+
   // --- Google official TEST ad unit IDs ---
   static const String _testBannerAndroid =
       'ca-app-pub-3940256099942544/6300978111';
@@ -23,6 +31,12 @@ class AdsConfig {
       'ca-app-pub-3940256099942544/1033173712';
   static const String _testAppOpenAndroid =
       'ca-app-pub-3940256099942544/9257395921';
+  static const String _testBannerIOS =
+      'ca-app-pub-3940256099942544/2934735716';
+  static const String _testInterstitialIOS =
+      'ca-app-pub-3940256099942544/4411468910';
+  static const String _testAppOpenIOS =
+      'ca-app-pub-3940256099942544/5575463023';
 
   // --- Real ad unit IDs for me.khokan.agecalculator (used when useTestAds == false) ---
   // AdMob App ID: ca-app-pub-1928074644821911~3546479443 (set in AndroidManifest).
@@ -34,27 +48,48 @@ class AdsConfig {
   // and paste its real unit ID here (falls back to the TEST unit until then).
   static const String _prodAppOpenAndroid = 'YOUR_REAL_APP_OPEN_AD_UNIT_ID';
 
+  // Real ad unit IDs for the separate iOS AdMob app entry (App ID:
+  // ca-app-pub-1928074644821911~7649605868, set in ios/Runner/Info.plist).
+  static const String _prodBannerIOS =
+      'ca-app-pub-1928074644821911/8350645141';
+  static const String _prodInterstitialIOS =
+      'ca-app-pub-1928074644821911/5072961298';
+  static const String _prodAppOpenIOS =
+      'ca-app-pub-1928074644821911/1032226622';
+
+  static bool get _iosProdIdsConfigured =>
+      !_prodBannerIOS.startsWith('YOUR_REAL_');
+
   static String get bannerAdUnitId {
     if (useTestAds) {
-      return _testBannerAndroid;
+      return Platform.isAndroid ? _testBannerAndroid : _testBannerIOS;
     }
-    return Platform.isAndroid ? _prodBannerAndroid : _testBannerAndroid;
+    if (Platform.isAndroid) {
+      return _prodBannerAndroid;
+    }
+    return _iosProdIdsConfigured ? _prodBannerIOS : _testBannerIOS;
   }
 
   static String get interstitialAdUnitId {
     if (useTestAds) {
-      return _testInterstitialAndroid;
+      return Platform.isAndroid
+          ? _testInterstitialAndroid
+          : _testInterstitialIOS;
     }
-    return Platform.isAndroid
-        ? _prodInterstitialAndroid
-        : _testInterstitialAndroid;
+    if (Platform.isAndroid) {
+      return _prodInterstitialAndroid;
+    }
+    return _iosProdIdsConfigured ? _prodInterstitialIOS : _testInterstitialIOS;
   }
 
   static String get appOpenAdUnitId {
     if (useTestAds) {
-      return _testAppOpenAndroid;
+      return Platform.isAndroid ? _testAppOpenAndroid : _testAppOpenIOS;
     }
-    return Platform.isAndroid ? _prodAppOpenAndroid : _testAppOpenAndroid;
+    if (Platform.isAndroid) {
+      return _prodAppOpenAndroid;
+    }
+    return _iosProdIdsConfigured ? _prodAppOpenIOS : _testAppOpenIOS;
   }
 
   /// Show an interstitial at most once every [interstitialEveryNActions]
@@ -76,5 +111,11 @@ class AdsConfig {
   static const List<String> testDeviceIds = <String>[
     '86F322E132383FAD40F23029B90E3CDE', // Pixel 6a (dev) — current
     '24131E5E1CF760BDB504FBD51C41AF63', // Pixel 6a (older advertising id)
+    'ca954eb8611c1b71a019caf44d91ced4', // SQA-iPhone-12 (dev) — iOS
+    'b0db196c7d25c7cf8537d9219411ad05', // SQA-iPhone-12 (dev) — iOS, reinstall
+    '51c84f274c4eae3591764a9fd4f9872c', // SQA-iPhone-12 (dev) — iOS, reinstall
+    'f2e2bd056da160672938e7a407e75ab6', // SQA-iPhone-12 (dev) — iOS, reinstall
+    'ead65b9c4e044351b07ba5fae53e44dd', // SQA-iPhone-12 (dev) — iOS, reinstall
+    '00e33f245da6c65a374d6b073005d5fd', // SQA-iPhone-12 (dev) — iOS, reinstall
   ];
 }

@@ -42,7 +42,7 @@ class AppStrings {
   static const String playStoreUrl =
       'https://play.google.com/store/apps/details?id=me.khokan.agecalculator';
   static const String privacyPolicyUrl =
-      'https://khokan.me/age-calculator-privacy/';
+      'https://khokanuzzaman.github.io/privacy-policy/age-calculator-privacy-policy.html';
   static const String madeWithFlutter = 'Made with Flutter';
   static const String shareAppMessage =
       '$appName\n'

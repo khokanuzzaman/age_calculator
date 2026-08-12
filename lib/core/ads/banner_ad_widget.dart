@@ -21,7 +21,9 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
   @override
   void initState() {
     super.initState();
-    _load();
+    if (!AdsConfig.kDebugHideBannerAd) {
+      _load();
+    }
   }
 
   void _load() {
@@ -52,6 +54,9 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (AdsConfig.kDebugHideBannerAd) {
+      return const SizedBox.shrink();
+    }
     final adsEnabled = ref.watch(adsEnabledProvider);
     if (!adsEnabled || !_loaded || _bannerAd == null) {
       return const SizedBox.shrink();
