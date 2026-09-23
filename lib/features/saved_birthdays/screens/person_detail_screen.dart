@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../core/analytics/analytics_event.dart';
 import '../../../core/analytics/app_analytics.dart';
 import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/sharing/app_store_links.dart';
+import '../../../core/sharing/share_engine.dart';
+import '../../../core/sharing/share_payload.dart';
+import '../../../core/sharing/share_result.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_primary_button.dart';
 import '../../../shared/widgets/app_screen_backdrop.dart';
@@ -14,6 +17,8 @@ import '../../age_difference/utils/age_difference_utils.dart';
 import '../../age_calculator/utils/age_calculation_utils.dart';
 import '../../age_calculator/utils/zodiac_utils.dart';
 import '../../profile/providers/primary_profile_provider.dart';
+import '../../birthday_wishes/utils/birthday_share_service.dart';
+import '../../birthday_wishes/widgets/birthday_wish_composer_sheet.dart';
 import '../models/saved_person.dart';
 import '../providers/saved_birthdays_provider.dart';
 import '../widgets/person_editor_sheet.dart';
@@ -174,10 +179,28 @@ class _PersonDetailBody extends ConsumerWidget {
                   onPressed: () => _edit(context, ref, person),
                 ),
                 const SizedBox(height: AppSpacing.sm),
+                AppPrimaryButton(
+                  label: days == 0
+                      ? 'Send Birthday Wish'
+                      : 'Prepare a Birthday Wish',
+                  icon: Icons.celebration_outlined,
+                  onPressed: () => showBirthdayWishComposer(
+                    context,
+                    person: person,
+                    age: turns,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
                 OutlinedButton.icon(
-                  onPressed: () => _share(context, ref, person, countdown),
+                  onPressed: () => _shareCard(context, ref, person),
+                  icon: const Icon(Icons.card_giftcard_outlined),
+                  label: const Text('Share Birthday Card'),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                TextButton.icon(
+                  onPressed: () => _shareInfo(context, ref, person, countdown),
                   icon: const Icon(Icons.share_outlined),
-                  label: const Text('Share Birthday'),
+                  label: const Text('Share Birthday Info'),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 TextButton.icon(
@@ -204,7 +227,7 @@ class _PersonDetailBody extends ConsumerWidget {
     }
   }
 
-  Future<void> _share(
+  Future<void> _shareInfo(
     BuildContext context,
     WidgetRef ref,
     SavedPerson person,
@@ -215,13 +238,38 @@ class _PersonDetailBody extends ConsumerWidget {
     final message = details.daysUntilNextBirthday == 0
         ? '${person.name} turns ${person.ageInYears(now)} today 🎂'
         : '$countdown for ${person.name} 🎉';
+    await ShareEngine().share(
+      context,
+      SharePayload(
+        text: AppStoreLinks.captionFor(message),
+        subject: AppStrings.appName,
+      ),
+    );
     ref
         .read(appAnalyticsProvider)
         .logEventSafely(
           AnalyticsEvent.birthdayShared,
           parameters: const <String, Object>{'format': 'text'},
         );
-    await Share.share(message);
+  }
+
+  Future<void> _shareCard(
+    BuildContext context,
+    WidgetRef ref,
+    SavedPerson person,
+  ) async {
+    final result = await BirthdayShareService().shareCard(
+      context: context,
+      person: person,
+    );
+    ref
+        .read(appAnalyticsProvider)
+        .logEventSafely(
+          AnalyticsEvent.birthdayCardShared,
+          parameters: <String, Object>{
+            'format': result == ShareResult.image ? 'image' : 'text_fallback',
+          },
+        );
   }
 
   Future<void> _delete(

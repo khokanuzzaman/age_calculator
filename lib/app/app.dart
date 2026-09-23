@@ -9,6 +9,7 @@ import '../core/analytics/analytics_event.dart';
 import '../core/analytics/app_analytics.dart';
 import '../core/analytics/app_analytics_provider.dart';
 import '../core/constants/app_constants.dart';
+import '../core/notifications/notification_navigation_coordinator.dart';
 import '../core/widgets/home_widget_service.dart';
 import '../features/about/presentation/screens/about_screen.dart';
 import '../features/age_calculator/application/age_calculator_notifier.dart';
@@ -48,6 +49,22 @@ class _AgeCalculatorAppState extends ConsumerState<AgeCalculatorApp> {
   void initState() {
     super.initState();
     ref.read(appAnalyticsProvider).logEventSafely(AnalyticsEvent.appOpen);
+    notificationNavigationCoordinator.onOpened = (destination) {
+      ref
+          .read(appAnalyticsProvider)
+          .logEventSafely(
+            AnalyticsEvent.notificationOpened,
+            parameters: <String, Object>{
+              'destination': destination.analyticsDestination,
+              'reminder_type': destination.reminderType,
+            },
+          );
+    };
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        notificationNavigationCoordinator.flush();
+      }
+    });
     // Show an App Open ad when the app returns to the foreground (and on the
     // cold-start resume transition when an ad is already loaded). Guards inside
     // the manager prevent stacking with interstitials and enforce the cap.
@@ -91,6 +108,7 @@ class _AgeCalculatorAppState extends ConsumerState<AgeCalculatorApp> {
     });
 
     return MaterialApp(
+      navigatorKey: notificationNavigationCoordinator.navigatorKey,
       title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),

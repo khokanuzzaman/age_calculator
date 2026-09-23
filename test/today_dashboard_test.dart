@@ -61,4 +61,23 @@ void main() {
       expect(state.upcoming.any((item) => item.title == 'Past'), isFalse);
     },
   );
+
+  test('birthday Coming Up item keeps only a local source reference', () {
+    final state = TodayDashboardState.fromSources(
+      profile: PrimaryProfile(birthDate: DateTime(1990, 1, 1)),
+      savedBirthdays: [
+        SavedPerson(
+          id: 'person-1',
+          name: 'Mom',
+          birthDate: DateTime(1968, 10, 5),
+        ),
+      ],
+      now: DateTime(2026, 9, 23),
+    );
+
+    final birthday = state.upcoming.single;
+    expect(birthday.type, UpcomingItemType.birthday);
+    expect(birthday.sourceId, 'person-1');
+    expect(birthday.title, 'Mom');
+  });
 }

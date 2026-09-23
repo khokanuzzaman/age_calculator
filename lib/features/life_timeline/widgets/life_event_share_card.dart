@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/sharing/share_card_branding.dart';
 import '../models/life_event.dart';
 import '../utils/life_event_utils.dart';
 
@@ -19,8 +20,6 @@ class LifeEventShareCard extends StatelessWidget {
   static const Color _bgBottom = Color(0xFF0EA5E9);
   static const Color _accent = Color(0xFF38BDF8);
   static const Color _onDark = Color(0xFFF8FAFC);
-  static const Color _muted = Color(0xFFB9C2D0);
-
   @override
   Widget build(BuildContext context) {
     final age = details.ageAtEvent;
@@ -102,15 +101,7 @@ class LifeEventShareCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          Text(
-            'Plan your important moments · ${AppStrings.appName}',
-            style: GoogleFonts.inter(
-              color: _muted,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-          ),
+          const ShareCardBranding(),
         ],
       ),
     );

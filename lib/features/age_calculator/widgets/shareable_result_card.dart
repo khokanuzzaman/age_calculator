@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/sharing/share_card_branding.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../age_calculator/domain/models/age_result.dart';
 import '../utils/life_facts_utils.dart';
@@ -133,16 +134,7 @@ class ShareableResultCard extends StatelessWidget {
               value: '${heartbeats.value}  ·  ${breaths.value}',
             ),
             const SizedBox(height: AppSpacing.xl),
-            Center(
-              child: Text(
-                'Calculate yours · ${AppStrings.appName}',
-                style: GoogleFonts.inter(
-                  color: _muted,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
+            const ShareCardBranding(),
           ],
         ),
       ),

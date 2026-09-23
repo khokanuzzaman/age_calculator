@@ -16,6 +16,7 @@ class UpcomingItem {
     required this.emoji,
     required this.targetDate,
     required this.daysRemaining,
+    this.sourceId,
   });
 
   final UpcomingItemType type;
@@ -23,6 +24,7 @@ class UpcomingItem {
   final String emoji;
   final DateTime targetDate;
   final int daysRemaining;
+  final String? sourceId;
 }
 
 class TodayDashboardState {
@@ -79,6 +81,7 @@ class TodayDashboardState {
           emoji: person.emoji,
           targetDate: details.nextBirthdayDate,
           daysRemaining: details.daysUntilNextBirthday,
+          sourceId: person.id,
         ),
       );
     }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/app_routes.dart';
@@ -11,12 +10,16 @@ import '../../../core/analytics/analytics_event.dart';
 import '../../../core/analytics/app_analytics.dart';
 import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/sharing/app_store_links.dart';
+import '../../../core/sharing/share_engine.dart';
+import '../../../core/sharing/share_payload.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_primary_button.dart';
 import '../../../shared/widgets/app_screen_backdrop.dart';
 import '../../../shared/widgets/theme_mode_bottom_sheet.dart';
 import '../../age_calculator/application/age_calculator_notifier.dart';
+import '../../saved_birthdays/screens/person_detail_screen.dart';
 import '../models/today_dashboard_state.dart';
 import '../providers/today_dashboard_provider.dart';
 import '../widgets/tool_menu_card.dart';
@@ -76,9 +79,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           'source': 'home_menu',
                         },
                       );
-                  await Share.share(
-                    AppStrings.shareAppMessage,
-                    subject: AppStrings.appName,
+                  await ShareEngine().share(
+                    context,
+                    SharePayload(
+                      text: AppStoreLinks.appShareMessage,
+                      subject: AppStrings.appName,
+                    ),
                   );
                   break;
                 case _HomeMenuAction.about:
@@ -302,14 +308,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _openUpcoming(UpcomingItem item) {
-    _logAction(
-      item.type == UpcomingItemType.birthday ? 'my_people' : 'life_timeline',
-    );
-    Navigator.of(context).pushNamed(
-      item.type == UpcomingItemType.birthday
-          ? AppRoutes.savedBirthdays
-          : AppRoutes.lifeTimeline,
-    );
+    final isBirthday = item.type == UpcomingItemType.birthday;
+    _logAction(isBirthday ? 'my_people' : 'life_timeline');
+    if (isBirthday && item.sourceId != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => PersonDetailScreen(personId: item.sourceId!),
+        ),
+      );
+      return;
+    }
+    Navigator.of(
+      context,
+    ).pushNamed(isBirthday ? AppRoutes.savedBirthdays : AppRoutes.lifeTimeline);
   }
 
   void _openTarget(String target) {

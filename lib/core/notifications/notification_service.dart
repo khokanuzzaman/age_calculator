@@ -10,7 +10,9 @@ import '../../features/saved_birthdays/models/birthday_reminder_time.dart';
 import '../../features/saved_birthdays/models/saved_person.dart';
 import '../utils/date_utils.dart';
 import 'notification_gateway.dart';
+import 'notification_destination.dart';
 import 'notification_id_factory.dart';
+import 'notification_navigation_coordinator.dart';
 
 /// Schedules yearly local notifications for saved birthdays.
 ///
@@ -66,8 +68,23 @@ class NotificationService implements NotificationGateway {
     );
     await _plugin.initialize(
       const InitializationSettings(android: androidInit, iOS: iosInit),
+      onDidReceiveNotificationResponse: _onNotificationResponse,
     );
     _initialized = true;
+    try {
+      final launchDetails = await _plugin.getNotificationAppLaunchDetails();
+      if (launchDetails?.didNotificationLaunchApp == true) {
+        NotificationNavigationCoordinator.instance.handlePayload(
+          launchDetails?.notificationResponse?.payload,
+        );
+      }
+    } catch (_) {
+      // A notification launch is optional; startup must remain safe.
+    }
+  }
+
+  void _onNotificationResponse(NotificationResponse response) {
+    NotificationNavigationCoordinator.instance.handlePayload(response.payload);
   }
 
   /// Requests notification permission. Returns true if granted (or not required).
@@ -125,6 +142,9 @@ class NotificationService implements NotificationGateway {
         copy.body,
         scheduled,
         _birthdayDetails(),
+        payload: NotificationDestinationCodec.encode(
+          NotificationDestination.person(person.id),
+        ),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
@@ -185,6 +205,9 @@ class NotificationService implements NotificationGateway {
           priority: Priority.high,
         ),
         iOS: DarwinNotificationDetails(),
+      ),
+      payload: NotificationDestinationCodec.encode(
+        const NotificationDestination.lifeTimeline(),
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
@@ -251,6 +274,9 @@ class NotificationService implements NotificationGateway {
         body,
         _atTime(lead.date, reminderTime),
         _personalDetails(),
+        payload: NotificationDestinationCodec.encode(
+          const NotificationDestination.profile(),
+        ),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
@@ -289,6 +315,9 @@ class NotificationService implements NotificationGateway {
       'You\'re $formatted days old today. What a milestone!',
       scheduled,
       _personalDetails(),
+      payload: NotificationDestinationCodec.encode(
+        const NotificationDestination.milestone(),
+      ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,

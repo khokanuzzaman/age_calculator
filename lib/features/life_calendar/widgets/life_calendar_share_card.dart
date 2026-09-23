@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/sharing/share_card_branding.dart';
 import '../models/life_calendar_model.dart';
 
 class LifeCalendarShareCard extends StatelessWidget {
@@ -104,6 +105,8 @@ class LifeCalendarShareCard extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
+          const SizedBox(height: AppSpacing.sm),
+          const ShareCardBranding(),
         ],
       ),
     );

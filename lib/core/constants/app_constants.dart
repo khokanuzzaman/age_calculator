@@ -40,11 +40,10 @@ class AppStrings {
   static const String portfolioUrl = 'https://khokan.me';
   static const String playStoreUrl =
       'https://play.google.com/store/apps/details?id=me.khokan.agecalculator';
+  static const String appStoreUrl =
+      'https://apps.apple.com/us/app/age-calculator-zodiac-dob/id6802000455';
   static const String privacyPolicyUrl =
       'https://khokanuzzaman.github.io/privacy-policy/age-calculator-privacy-policy.html';
   static const String madeWithFlutter = 'Made with Flutter';
-  static const String shareAppMessage =
-      '$appName\n'
-      'Age, date, birthday, and time tools.\n'
-      '$playStoreUrl';
+  static const String shareAppMessage = appName;
 }
