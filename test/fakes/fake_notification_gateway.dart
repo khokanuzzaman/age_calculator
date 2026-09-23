@@ -9,8 +9,12 @@ class FakeNotificationGateway implements NotificationGateway {
   int rescheduleAllCalls = 0;
   int syncPersonCalls = 0;
   int cancelPersonCalls = 0;
+  int syncLifeEventCalls = 0;
+  int cancelLifeEventCalls = 0;
   final syncedPeople = <SavedPerson>[];
   final cancelledPersonIds = <String>[];
+  final syncedLifeEvents = <LifeEvent>[];
+  final cancelledLifeEventIds = <String>[];
 
   @override
   Future<bool> requestPermission() async => permissionGranted;
@@ -57,5 +61,20 @@ class FakeNotificationGateway implements NotificationGateway {
   Future<void> cancelPersonReminders(String personId) async {
     cancelPersonCalls++;
     cancelledPersonIds.add(personId);
+  }
+
+  @override
+  Future<void> syncLifeEvent(
+    LifeEvent event, {
+    BirthdayReminderTime reminderTime = BirthdayReminderTime.defaultTime,
+  }) async {
+    syncLifeEventCalls++;
+    syncedLifeEvents.add(event);
+  }
+
+  @override
+  Future<void> cancelLifeEventReminders(String eventId) async {
+    cancelLifeEventCalls++;
+    cancelledLifeEventIds.add(eventId);
   }
 }

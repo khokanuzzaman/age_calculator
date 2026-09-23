@@ -102,7 +102,6 @@ class _AgeCalculatorAppState extends ConsumerState<AgeCalculatorApp> {
     }
     ref.listen(lifeEventsProvider, (previous, next) {
       if (previous != next) {
-        ref.read(remindersEnabledProvider.notifier).syncFromLifeEvents();
         ref.read(homeWidgetServiceProvider).refresh();
       }
     });

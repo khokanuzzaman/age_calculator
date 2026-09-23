@@ -12,6 +12,16 @@ void main() {
     expect(NotificationDestinationCodec.decode(payload)?.localId, 'person-123');
   });
 
+  test('Life Event notification payload contains only the local ID', () {
+    const destination = NotificationDestination.lifeEvent('event-123');
+    final payload = NotificationDestinationCodec.encode(destination);
+
+    expect(payload, 'life_event:event-123');
+    expect(NotificationDestinationCodec.decode(payload)?.localId, 'event-123');
+    expect(payload, isNot(contains('Wedding')));
+    expect(payload, isNot(contains('2020')));
+  });
+
   test('malformed notification payloads fail safely', () {
     expect(NotificationDestinationCodec.decode(null), isNull);
     expect(NotificationDestinationCodec.decode(''), isNull);
@@ -21,6 +31,14 @@ void main() {
       isNull,
     );
     expect(NotificationDestinationCodec.decode('unknown:destination'), isNull);
+    expect(NotificationDestinationCodec.decode('life_event:'), isNull);
+  });
+
+  test('legacy Life Timeline notification payload remains supported', () {
+    expect(
+      NotificationDestinationCodec.decode('life_timeline')?.type,
+      NotificationDestinationType.lifeTimeline,
+    );
   });
 
   test('supported non-person destinations stay fixed and non-personal', () {

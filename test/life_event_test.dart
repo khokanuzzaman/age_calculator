@@ -1,6 +1,10 @@
 import 'package:age_calculator/features/life_timeline/data/life_events_repository.dart';
 import 'package:age_calculator/features/life_timeline/models/life_event.dart';
+import 'package:age_calculator/features/life_timeline/models/life_event_category.dart';
+import 'package:age_calculator/features/life_timeline/models/life_event_recurrence.dart';
+import 'package:age_calculator/features/life_timeline/models/life_event_reminder_preferences.dart';
 import 'package:age_calculator/features/life_timeline/utils/life_event_utils.dart';
+import 'package:age_calculator/features/life_timeline/utils/life_event_reminder_utils.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -96,5 +100,176 @@ void main() {
     expect(loaded.single.eventDate, event.eventDate);
     expect(loaded.single.emoji, event.emoji);
     expect(loaded.single.reminderEnabled, isFalse);
+  });
+
+  test('legacy JSON defaults category and recurrence safely', () {
+    final event = LifeEvent.fromJson({
+      'id': 'legacy',
+      'title': 'Legacy moment',
+      'eventDateMs': DateTime(2020, 5, 9).millisecondsSinceEpoch,
+      'emoji': '⭐',
+      'reminderEnabled': true,
+    });
+
+    expect(event.category, LifeEventCategory.personal);
+    expect(event.recurrence, LifeEventRecurrence.none);
+    expect(event.reminderLeadDays, [0]);
+  });
+
+  test('yearly event and reminder preferences round-trip', () {
+    final original = LifeEvent(
+      id: 'wedding',
+      title: 'Wedding',
+      eventDate: DateTime(2019, 5, 9),
+      category: LifeEventCategory.relationship,
+      recurrence: LifeEventRecurrence.yearly,
+      reminderPreferences: const LifeEventReminderPreferences(
+        enabled: true,
+        leadDays: [7, 1, 0],
+      ),
+    );
+
+    final loaded = LifeEvent.fromJson(original.toJson());
+
+    expect(loaded.category, LifeEventCategory.relationship);
+    expect(loaded.recurrence, LifeEventRecurrence.yearly);
+    expect(loaded.reminderPreferences, original.reminderPreferences);
+    expect(loaded.eventDate, DateTime(2019, 5, 9));
+  });
+
+  test(
+    'yearly occurrence derives current anniversary without mutating source',
+    () {
+      final event = LifeEvent(
+        id: 'wedding',
+        title: 'Wedding',
+        eventDate: DateTime(2019, 5, 9),
+        recurrence: LifeEventRecurrence.yearly,
+      );
+
+      final occurrence = LifeEventUtils.nextOccurrence(
+        event,
+        now: DateTime(2027, 5, 1),
+      );
+
+      expect(occurrence?.occurrenceDate, DateTime(2027, 5, 9));
+      expect(occurrence?.daysUntil, 8);
+      expect(occurrence?.anniversaryNumber, 8);
+      expect(event.eventDate, DateTime(2019, 5, 9));
+    },
+  );
+
+  test('yearly occurrence rolls to next year after this anniversary', () {
+    final event = LifeEvent(
+      id: 'wedding',
+      title: 'Wedding',
+      eventDate: DateTime(2019, 5, 9),
+      recurrence: LifeEventRecurrence.yearly,
+    );
+
+    final occurrence = LifeEventUtils.nextOccurrence(
+      event,
+      now: DateTime(2027, 5, 10),
+    );
+
+    expect(occurrence?.occurrenceDate, DateTime(2028, 5, 9));
+    expect(occurrence?.anniversaryNumber, 9);
+  });
+
+  test('yearly occurrence is today on the anniversary', () {
+    final event = LifeEvent(
+      id: 'wedding',
+      title: 'Wedding',
+      eventDate: DateTime(2019, 5, 9),
+      recurrence: LifeEventRecurrence.yearly,
+    );
+
+    final occurrence = LifeEventUtils.nextOccurrence(
+      event,
+      now: DateTime(2027, 5, 9),
+    );
+
+    expect(occurrence?.isToday, isTrue);
+    expect(occurrence?.anniversaryNumber, 8);
+  });
+
+  test('Feb 29 yearly events use the established Feb 28 fallback', () {
+    final event = LifeEvent(
+      id: 'leap-moment',
+      title: 'Leap moment',
+      eventDate: DateTime(2020, 2, 29),
+      recurrence: LifeEventRecurrence.yearly,
+    );
+
+    final nonLeap = LifeEventUtils.nextOccurrence(
+      event,
+      now: DateTime(2023, 2, 1),
+    );
+    final leap = LifeEventUtils.nextOccurrence(
+      event,
+      now: DateTime(2024, 2, 1),
+    );
+
+    expect(nonLeap?.occurrenceDate, DateTime(2023, 2, 28));
+    expect(leap?.occurrenceDate, DateTime(2024, 2, 29));
+  });
+
+  test('reminder preferences normalize one-time and yearly leads', () {
+    const preferences = LifeEventReminderPreferences(
+      enabled: true,
+      leadDays: [3, 7, 1, 0, 7],
+    );
+
+    expect(preferences.normalized(recurring: false), [0]);
+    expect(preferences.normalized(recurring: true), [7, 1, 0]);
+  });
+
+  test('yearly reminder schedules skip stale leads and keep future leads', () {
+    final event = LifeEvent(
+      id: 'wedding',
+      title: 'Wedding',
+      eventDate: DateTime(2019, 5, 9),
+      recurrence: LifeEventRecurrence.yearly,
+      reminderPreferences: const LifeEventReminderPreferences(
+        leadDays: [7, 1, 0],
+      ),
+    );
+
+    final schedules = LifeEventReminderUtils.upcomingSchedules(
+      event,
+      now: DateTime(2027, 5, 8),
+    );
+
+    expect(schedules.map((item) => item.leadDays), [1, 0]);
+    expect(schedules.map((item) => item.scheduledDate), [
+      DateTime(2027, 5, 8),
+      DateTime(2027, 5, 9),
+    ]);
+  });
+
+  test('disabled and past one-time events schedule nothing', () {
+    final disabled = LifeEvent(
+      id: 'disabled',
+      title: 'Disabled',
+      eventDate: DateTime(2027, 5, 9),
+      reminderEnabled: false,
+    );
+    final past = LifeEvent(
+      id: 'past',
+      title: 'Past',
+      eventDate: DateTime(2020, 5, 9),
+    );
+
+    expect(
+      LifeEventReminderUtils.upcomingSchedules(
+        disabled,
+        now: DateTime(2027, 5, 1),
+      ),
+      isEmpty,
+    );
+    expect(
+      LifeEventReminderUtils.upcomingSchedules(past, now: DateTime(2027, 5, 1)),
+      isEmpty,
+    );
   });
 }

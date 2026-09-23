@@ -38,7 +38,14 @@ enum AnalyticsEvent {
   birthdayWishShared('birthday_wish_shared'),
   birthdayCardShared('birthday_card_shared'),
   notificationOpened('notification_opened'),
-  shareFallbackUsed('share_fallback_used');
+  shareFallbackUsed('share_fallback_used'),
+  lifeEventDetailOpened('life_event_detail_opened'),
+  lifeEventRecurrenceChanged('life_event_recurrence_changed'),
+  lifeEventCategorySelected('life_event_category_selected'),
+  lifeEventReminderPreferencesChanged(
+    'life_event_reminder_preferences_changed',
+  ),
+  lifeTimelineFilterChanged('life_timeline_filter_changed');
 
   const AnalyticsEvent(this.name);
 

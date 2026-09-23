@@ -4,6 +4,9 @@ import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/app_date_field.dart';
 import '../../../shared/widgets/app_primary_button.dart';
 import '../models/life_event.dart';
+import '../models/life_event_category.dart';
+import '../models/life_event_recurrence.dart';
+import '../models/life_event_reminder_preferences.dart';
 
 Future<LifeEvent?> showLifeEventEditor(
   BuildContext context, {
@@ -37,6 +40,9 @@ class _LifeEventEditorSheetState extends State<_LifeEventEditorSheet> {
   late DateTime? _eventDate;
   late String _emoji;
   late bool _reminderEnabled;
+  late LifeEventCategory _category;
+  late LifeEventRecurrence _recurrence;
+  late Set<int> _leadDays;
 
   @override
   void initState() {
@@ -45,8 +51,16 @@ class _LifeEventEditorSheetState extends State<_LifeEventEditorSheet> {
       text: widget.existing?.title ?? '',
     );
     _eventDate = widget.existing?.eventDate;
-    _emoji = widget.existing?.emoji ?? _emojiChoices.first;
+    _category = widget.existing?.category ?? LifeEventCategory.personal;
+    _recurrence = widget.existing?.recurrence ?? LifeEventRecurrence.none;
+    _emoji = widget.existing?.emoji ?? _category.defaultEmoji;
     _reminderEnabled = widget.existing?.reminderEnabled ?? true;
+    _leadDays = {
+      ...(widget.existing?.reminderLeadDays ?? const [1, 0]),
+    };
+    if (_leadDays.isEmpty) {
+      _leadDays = {1, 0};
+    }
   }
 
   @override
@@ -79,7 +93,14 @@ class _LifeEventEditorSheetState extends State<_LifeEventEditorSheet> {
         title: title,
         eventDate: eventDate,
         emoji: _emoji,
-        reminderEnabled: _reminderEnabled,
+        category: _category,
+        recurrence: _recurrence,
+        reminderPreferences: LifeEventReminderPreferences(
+          enabled: _reminderEnabled,
+          leadDays: _recurrence == LifeEventRecurrence.yearly
+              ? _leadDays.toList()
+              : const [0],
+        ),
       ),
     );
   }
@@ -131,6 +152,51 @@ class _LifeEventEditorSheetState extends State<_LifeEventEditorSheet> {
               onChanged: (date) => setState(() => _eventDate = date),
             ),
             const SizedBox(height: AppSpacing.base),
+            DropdownButtonFormField<LifeEventCategory>(
+              initialValue: _category,
+              decoration: const InputDecoration(labelText: 'Category'),
+              items: [
+                for (final category in LifeEventCategory.values)
+                  DropdownMenuItem(
+                    value: category,
+                    child: Text('${category.defaultEmoji} ${category.label}'),
+                  ),
+              ],
+              onChanged: (category) {
+                if (category == null) {
+                  return;
+                }
+                setState(() {
+                  _category = category;
+                  if (!_emojiChoices.contains(_emoji)) {
+                    _emoji = category.defaultEmoji;
+                  }
+                });
+              },
+            ),
+            const SizedBox(height: AppSpacing.base),
+            Text('Repeat', style: textTheme.labelLarge),
+            const SizedBox(height: AppSpacing.sm),
+            SegmentedButton<LifeEventRecurrence>(
+              segments: [
+                for (final recurrence in LifeEventRecurrence.values)
+                  ButtonSegment(
+                    value: recurrence,
+                    label: Text(recurrence.label),
+                  ),
+              ],
+              selected: {_recurrence},
+              onSelectionChanged: (selection) {
+                setState(() => _recurrence = selection.first);
+              },
+              showSelectedIcon: false,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Use Every year for anniversaries and recurring personal dates.',
+              style: textTheme.bodySmall,
+            ),
+            const SizedBox(height: AppSpacing.base),
             Text('Icon', style: textTheme.labelLarge),
             const SizedBox(height: AppSpacing.sm),
             Wrap(
@@ -152,6 +218,34 @@ class _LifeEventEditorSheetState extends State<_LifeEventEditorSheet> {
               value: _reminderEnabled,
               onChanged: (value) => setState(() => _reminderEnabled = value),
             ),
+            if (_recurrence == LifeEventRecurrence.yearly) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text('Remind me before this moment', style: textTheme.labelLarge),
+              const SizedBox(height: AppSpacing.xs),
+              Wrap(
+                spacing: AppSpacing.sm,
+                children: [
+                  for (final lead in const [7, 1, 0])
+                    FilterChip(
+                      label: Text(
+                        lead == 0 ? 'On the day' : '$lead days before',
+                      ),
+                      selected: _leadDays.contains(lead),
+                      onSelected: !_reminderEnabled
+                          ? null
+                          : (selected) {
+                              setState(() {
+                                if (selected) {
+                                  _leadDays.add(lead);
+                                } else if (_leadDays.length > 1) {
+                                  _leadDays.remove(lead);
+                                }
+                              });
+                            },
+                    ),
+                ],
+              ),
+            ],
             const SizedBox(height: AppSpacing.md),
             AppPrimaryButton(
               label: isEditing ? 'Save event' : 'Add event',

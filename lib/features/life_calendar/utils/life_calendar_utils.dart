@@ -69,6 +69,8 @@ class LifeCalendarUtils {
     required int horizonWeeks,
     required Iterable<LifeEvent> events,
   }) {
+    // Life Calendar remains a historical map: recurring moments contribute
+    // only their original marker, avoiding thousands of derived yearly cells.
     final result = <int, List<LifeEventMarker>>{};
     for (final event in events) {
       final eventDate = AppDateUtils.dateOnly(event.eventDate);

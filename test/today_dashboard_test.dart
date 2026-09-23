@@ -1,5 +1,6 @@
 import 'package:age_calculator/features/home/models/today_dashboard_state.dart';
 import 'package:age_calculator/features/life_timeline/models/life_event.dart';
+import 'package:age_calculator/features/life_timeline/models/life_event_recurrence.dart';
 import 'package:age_calculator/features/profile/models/primary_profile.dart';
 import 'package:age_calculator/features/saved_birthdays/models/saved_person.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -79,5 +80,35 @@ void main() {
     expect(birthday.type, UpcomingItemType.birthday);
     expect(birthday.sourceId, 'person-1');
     expect(birthday.title, 'Mom');
+  });
+
+  test('recurring anniversaries appear in chronological Coming Up order', () {
+    final state = TodayDashboardState.fromSources(
+      profile: PrimaryProfile(birthDate: DateTime(1990, 1, 1)),
+      savedBirthdays: [
+        SavedPerson(
+          id: 'person-1',
+          name: 'Friend',
+          birthDate: DateTime(1990, 12, 1),
+        ),
+      ],
+      lifeEvents: [
+        LifeEvent(
+          id: 'wedding',
+          title: 'Wedding',
+          eventDate: DateTime(2019, 10, 5),
+          recurrence: LifeEventRecurrence.yearly,
+        ),
+        LifeEvent(id: 'past', title: 'Past', eventDate: DateTime(2020, 1, 1)),
+      ],
+      now: DateTime(2026, 9, 23),
+    );
+
+    expect(state.upcoming.map((item) => item.title), [
+      'Wedding anniversary',
+      'Friend',
+    ]);
+    expect(state.upcoming.first.sourceId, 'wedding');
+    expect(state.upcoming.first.daysRemaining, 12);
   });
 }

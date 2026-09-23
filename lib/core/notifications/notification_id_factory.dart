@@ -23,6 +23,14 @@ class NotificationIdFactory {
     return lifeEventBase - (_stableHash('life-event:$eventId') & 0x0fffffff);
   }
 
+  static int lifeEventReminder(String eventId, int leadDays) {
+    if (leadDays == 0) {
+      return lifeEvent(eventId);
+    }
+    return lifeEventBase -
+        (_stableHash('life-event:$eventId:lead:$leadDays') & 0x0fffffff);
+  }
+
   static int stableHash(String value) {
     return _stableHash(value);
   }

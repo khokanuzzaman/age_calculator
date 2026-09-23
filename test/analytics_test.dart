@@ -47,6 +47,22 @@ void main() {
       AnalyticsEvent.myPeopleFilterChanged.name,
       'my_people_filter_changed',
     );
+    expect(
+      AnalyticsEvent.lifeEventDetailOpened.name,
+      'life_event_detail_opened',
+    );
+    expect(
+      AnalyticsEvent.lifeEventRecurrenceChanged.name,
+      'life_event_recurrence_changed',
+    );
+    expect(
+      AnalyticsEvent.lifeEventCategorySelected.name,
+      'life_event_category_selected',
+    );
+    expect(
+      AnalyticsEvent.lifeEventReminderPreferencesChanged.name,
+      'life_event_reminder_preferences_changed',
+    );
   });
 
   test('the default analytics implementation is a safe no-op', () async {

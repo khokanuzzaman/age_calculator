@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/app_routes.dart';
+import '../../features/life_timeline/screens/life_event_detail_screen.dart';
 import '../../features/saved_birthdays/screens/person_detail_screen.dart';
 import 'notification_destination.dart';
 
@@ -47,6 +48,15 @@ class NotificationNavigationCoordinator {
           navigator.push(
             MaterialPageRoute<void>(
               builder: (_) => PersonDetailScreen(personId: id),
+            ),
+          );
+        }
+      case NotificationDestinationType.lifeEvent:
+        final id = destination.localId;
+        if (id != null) {
+          navigator.push(
+            MaterialPageRoute<void>(
+              builder: (_) => LifeEventDetailScreen(eventId: id),
             ),
           );
         }

@@ -11,7 +11,9 @@ import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_screen_backdrop.dart';
 import '../../profile/providers/primary_profile_provider.dart';
 import '../models/life_event.dart';
+import '../models/life_event_recurrence.dart';
 import '../providers/life_events_provider.dart';
+import 'life_event_detail_screen.dart';
 import '../utils/life_event_share_service.dart';
 import '../utils/life_event_utils.dart';
 import '../widgets/life_event_editor_sheet.dart';
@@ -44,12 +46,14 @@ class _LifeTimelineScreenState extends ConsumerState<LifeTimelineScreen> {
     final today = AppDateUtils.dateOnly(DateTime.now());
     final upcoming = events
         .where(
-          (event) => !AppDateUtils.dateOnly(event.eventDate).isBefore(today),
+          (event) => LifeEventUtils.nextOccurrence(event, now: today) != null,
         )
         .toList(growable: false);
     final past = events
         .where(
-          (event) => AppDateUtils.dateOnly(event.eventDate).isBefore(today),
+          (event) =>
+              event.recurrence == LifeEventRecurrence.none &&
+              AppDateUtils.dateOnly(event.eventDate).isBefore(today),
         )
         .toList(growable: false);
 
@@ -86,6 +90,7 @@ class _LifeTimelineScreenState extends ConsumerState<LifeTimelineScreen> {
                           _LifeEventCard(
                             event: event,
                             birthDate: birthDate,
+                            onTap: () => _openDetail(context, event),
                             onEdit: () => _edit(context, ref, event, birthDate),
                             onDelete: () => _delete(context, ref, event),
                           ),
@@ -103,6 +108,7 @@ class _LifeTimelineScreenState extends ConsumerState<LifeTimelineScreen> {
                           _LifeEventCard(
                             event: event,
                             birthDate: birthDate,
+                            onTap: () => _openDetail(context, event),
                             onEdit: () => _edit(context, ref, event, birthDate),
                             onDelete: () => _delete(context, ref, event),
                           ),
@@ -131,6 +137,27 @@ class _LifeTimelineScreenState extends ConsumerState<LifeTimelineScreen> {
             AnalyticsEvent.timelineEventAdded,
             parameters: <String, Object>{
               'reminder_enabled': event.reminderEnabled,
+              'category': event.category.name,
+              'recurrence': event.recurrence.name,
+            },
+          );
+      ref
+          .read(appAnalyticsProvider)
+          .logEventSafely(
+            AnalyticsEvent.lifeEventCategorySelected,
+            parameters: <String, Object>{'category': event.category.name},
+          );
+      ref
+          .read(appAnalyticsProvider)
+          .logEventSafely(
+            AnalyticsEvent.lifeEventReminderPreferencesChanged,
+            parameters: <String, Object>{
+              'enabled': event.reminderEnabled,
+              'lead_count': event.reminderPreferences
+                  .normalized(
+                    recurring: event.recurrence == LifeEventRecurrence.yearly,
+                  )
+                  .length,
             },
           );
     }
@@ -155,9 +182,53 @@ class _LifeTimelineScreenState extends ConsumerState<LifeTimelineScreen> {
             AnalyticsEvent.timelineEventUpdated,
             parameters: <String, Object>{
               'reminder_enabled': updated.reminderEnabled,
+              'category': updated.category.name,
+              'recurrence': updated.recurrence.name,
             },
           );
+      if (event.category != updated.category) {
+        ref
+            .read(appAnalyticsProvider)
+            .logEventSafely(
+              AnalyticsEvent.lifeEventCategorySelected,
+              parameters: <String, Object>{'category': updated.category.name},
+            );
+      }
+      if (event.recurrence != updated.recurrence) {
+        ref
+            .read(appAnalyticsProvider)
+            .logEventSafely(
+              AnalyticsEvent.lifeEventRecurrenceChanged,
+              parameters: <String, Object>{
+                'recurrence': updated.recurrence.name,
+              },
+            );
+      }
+      if (event.reminderPreferences != updated.reminderPreferences) {
+        ref
+            .read(appAnalyticsProvider)
+            .logEventSafely(
+              AnalyticsEvent.lifeEventReminderPreferencesChanged,
+              parameters: <String, Object>{
+                'enabled': updated.reminderEnabled,
+                'lead_count': updated.reminderPreferences
+                    .normalized(
+                      recurring:
+                          updated.recurrence == LifeEventRecurrence.yearly,
+                    )
+                    .length,
+              },
+            );
+      }
     }
+  }
+
+  void _openDetail(BuildContext context, LifeEvent event) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => LifeEventDetailScreen(eventId: event.id),
+      ),
+    );
   }
 
   Future<void> _delete(
@@ -219,12 +290,14 @@ class _LifeEventCard extends StatelessWidget {
   const _LifeEventCard({
     required this.event,
     required this.birthDate,
+    required this.onTap,
     required this.onEdit,
     required this.onDelete,
   });
 
   final LifeEvent event;
   final DateTime? birthDate;
+  final VoidCallback onTap;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -235,7 +308,7 @@ class _LifeEventCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return AppCard(
-      onTap: onEdit,
+      onTap: onTap,
       padding: const EdgeInsets.all(AppSpacing.base),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,6 +336,17 @@ class _LifeEventCard extends StatelessWidget {
                     color: scheme.onSurfaceVariant,
                   ),
                 ),
+                if (event.recurrence == LifeEventRecurrence.yearly)
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.xs),
+                    child: Text(
+                      'Yearly · next ${DateFormat('d MMM yyyy').format(details.occurrenceDate ?? event.eventDate)}',
+                      style: textTheme.labelMedium?.copyWith(
+                        color: scheme.secondary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   details.relativeText,
@@ -283,6 +367,11 @@ class _LifeEventCard extends StatelessWidget {
           ),
           Column(
             children: [
+              IconButton(
+                tooltip: 'Edit event',
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit_outlined),
+              ),
               IconButton(
                 tooltip: 'Share event',
                 onPressed: () => LifeEventShareService.shareEvent(
@@ -330,7 +419,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Add a graduation, first job, trip, or any important moment to see your age on that date.',
+              'Add a graduation, first job, trip, anniversary, or any important moment to see it on your timeline.',
               style: textTheme.bodyMedium?.copyWith(
                 color: scheme.onSurfaceVariant,
               ),

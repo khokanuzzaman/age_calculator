@@ -168,4 +168,27 @@ void main() {
     expect(find.text('Upcoming'), findsOneWidget);
     expect(find.text('Mom'), findsOneWidget);
   });
+
+  testWidgets('opens a Life Event detail from the timeline', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(
+      tester,
+      preferences: {
+        'life_events_v1':
+            '[{"id":"wedding","title":"Wedding","eventDateMs":1557360000000,"emoji":"❤️","reminderEnabled":true,"category":"relationship","recurrence":"yearly","reminderLeadDays":[1,0]}]',
+      },
+    );
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -300));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Life Timeline'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Wedding'), findsOneWidget);
+    await tester.tap(find.text('Wedding'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Moment details'), findsOneWidget);
+    expect(find.text('Every year'), findsOneWidget);
+  });
 }

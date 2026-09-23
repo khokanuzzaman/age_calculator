@@ -6,6 +6,8 @@ import '../../age_calculator/utils/age_calculation_utils.dart';
 import '../../life_timeline/models/life_event.dart';
 import '../../profile/models/primary_profile.dart';
 import '../../saved_birthdays/models/saved_person.dart';
+import '../../life_timeline/utils/life_event_utils.dart';
+import '../../life_timeline/models/life_event_recurrence.dart';
 
 enum UpcomingItemType { birthday, lifeEvent }
 
@@ -87,17 +89,21 @@ class TodayDashboardState {
     }
 
     for (final event in lifeEvents) {
-      final targetDate = AppDateUtils.dateOnly(event.eventDate);
-      if (targetDate.isBefore(today)) {
+      final occurrence = LifeEventUtils.nextOccurrence(event, now: today);
+      if (occurrence == null) {
         continue;
       }
+      final targetDate = occurrence.occurrenceDate;
       items.add(
         UpcomingItem(
           type: UpcomingItemType.lifeEvent,
-          title: event.title,
+          title: event.recurrence == LifeEventRecurrence.yearly
+              ? '${event.title} anniversary'
+              : event.title,
           emoji: event.emoji,
           targetDate: targetDate,
-          daysRemaining: targetDate.difference(today).inDays,
+          daysRemaining: occurrence.daysUntil,
+          sourceId: event.id,
         ),
       );
     }

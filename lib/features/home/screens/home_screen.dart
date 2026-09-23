@@ -20,6 +20,7 @@ import '../../../shared/widgets/app_screen_backdrop.dart';
 import '../../../shared/widgets/theme_mode_bottom_sheet.dart';
 import '../../age_calculator/application/age_calculator_notifier.dart';
 import '../../saved_birthdays/screens/person_detail_screen.dart';
+import '../../life_timeline/screens/life_event_detail_screen.dart';
 import '../models/today_dashboard_state.dart';
 import '../providers/today_dashboard_provider.dart';
 import '../widgets/tool_menu_card.dart';
@@ -310,10 +311,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _openUpcoming(UpcomingItem item) {
     final isBirthday = item.type == UpcomingItemType.birthday;
     _logAction(isBirthday ? 'my_people' : 'life_timeline');
-    if (isBirthday && item.sourceId != null) {
+    if (item.sourceId != null) {
       Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (_) => PersonDetailScreen(personId: item.sourceId!),
+          builder: (_) => isBirthday
+              ? PersonDetailScreen(personId: item.sourceId!)
+              : LifeEventDetailScreen(eventId: item.sourceId!),
         ),
       );
       return;

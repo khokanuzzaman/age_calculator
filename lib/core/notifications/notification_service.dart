@@ -5,6 +5,9 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../../features/age_calculator/utils/age_calculation_utils.dart';
 import '../../features/life_timeline/models/life_event.dart';
+import '../../features/life_timeline/models/life_event_recurrence.dart';
+import '../../features/life_timeline/utils/life_event_reminder_utils.dart';
+import '../../features/life_timeline/utils/life_event_utils.dart';
 import '../../features/saved_birthdays/models/birthday_reminder_preferences.dart';
 import '../../features/saved_birthdays/models/birthday_reminder_time.dart';
 import '../../features/saved_birthdays/models/saved_person.dart';
@@ -110,10 +113,6 @@ class NotificationService implements NotificationGateway {
     return true;
   }
 
-  int _lifeEventNotificationId(String eventId) {
-    return NotificationIdFactory.lifeEvent(eventId);
-  }
-
   Future<void> scheduleBirthday(
     SavedPerson person, {
     BirthdayReminderTime reminderTime = BirthdayReminderTime.defaultTime,
@@ -186,33 +185,56 @@ class NotificationService implements NotificationGateway {
     }
 
     final now = tz.TZDateTime.now(tz.local);
-    final scheduled = _atTime(event.eventDate, reminderTime);
-    if (!scheduled.isAfter(now)) {
-      return;
-    }
-
-    await _plugin.zonedSchedule(
-      _lifeEventNotificationId(event.id),
-      '${event.emoji} ${event.title}',
-      'Your life event is today.',
-      scheduled,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          _personalChannelId,
-          _personalChannelName,
-          channelDescription: _personalChannelDescription,
-          importance: Importance.high,
-          priority: Priority.high,
+    final today = DateTime(now.year, now.month, now.day);
+    for (final reminder in LifeEventReminderUtils.upcomingSchedules(
+      event,
+      now: today,
+    )) {
+      final scheduled = _atTime(reminder.scheduledDate, reminderTime);
+      if (!scheduled.isAfter(now)) {
+        continue;
+      }
+      final copy = _lifeEventCopy(
+        event,
+        reminder.occurrence,
+        reminder.leadDays,
+      );
+      await _plugin.zonedSchedule(
+        NotificationIdFactory.lifeEventReminder(event.id, reminder.leadDays),
+        copy.title,
+        copy.body,
+        scheduled,
+        _personalDetails(),
+        payload: NotificationDestinationCodec.encode(
+          NotificationDestination.lifeEvent(event.id),
         ),
-        iOS: DarwinNotificationDetails(),
-      ),
-      payload: NotificationDestinationCodec.encode(
-        const NotificationDestination.lifeTimeline(),
-      ),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-    );
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: event.recurrence == LifeEventRecurrence.yearly
+            ? DateTimeComponents.dateAndTime
+            : null,
+      );
+    }
+  }
+
+  @override
+  Future<void> syncLifeEvent(
+    LifeEvent event, {
+    BirthdayReminderTime reminderTime = BirthdayReminderTime.defaultTime,
+  }) async {
+    await cancelLifeEventReminders(event.id);
+    await scheduleLifeEvent(event, reminderTime: reminderTime);
+  }
+
+  @override
+  Future<void> cancelLifeEventReminders(String eventId) async {
+    await init();
+    for (final leadDays in const [0, 1, 7]) {
+      await _plugin.cancel(
+        NotificationIdFactory.lifeEventReminder(eventId, leadDays),
+      );
+    }
   }
 
   /// Cancels all reminders then reschedules the given people. Used when
@@ -387,6 +409,42 @@ class NotificationService implements NotificationGateway {
     return (
       title: '🎂 ${person.name}\'s birthday is coming up',
       body: '$leadDays days until ${person.name}\'s birthday.',
+    );
+  }
+
+  ({String title, String body}) _lifeEventCopy(
+    LifeEvent event,
+    LifeEventOccurrence occurrence,
+    int leadDays,
+  ) {
+    final anniversary = event.recurrence == LifeEventRecurrence.yearly;
+    if (leadDays == 0) {
+      final suffix = anniversary && occurrence.anniversaryNumber > 0
+          ? ' ${occurrence.anniversaryNumber} years today.'
+          : '';
+      return (
+        title:
+            '${event.emoji} ${event.title}${anniversary ? ' anniversary' : ''} today',
+        body: anniversary
+            ? 'Your anniversary is today.$suffix'
+            : 'Your life event is today.',
+      );
+    }
+    if (leadDays == 1) {
+      return (
+        title:
+            '${event.emoji} ${event.title}${anniversary ? ' anniversary' : ''} tomorrow',
+        body: anniversary
+            ? 'Your anniversary is tomorrow.'
+            : 'Your life event is tomorrow.',
+      );
+    }
+    return (
+      title:
+          '${event.emoji} ${event.title}${anniversary ? ' anniversary' : ''} coming up',
+      body: anniversary
+          ? 'Your anniversary is in $leadDays days.'
+          : '${event.title} is in $leadDays days.',
     );
   }
 }

@@ -6,6 +6,7 @@ import '../../../core/analytics/app_analytics.dart';
 import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/notifications/notification_gateway_provider.dart';
 import '../../life_timeline/providers/life_events_provider.dart';
+import '../../life_timeline/models/life_event.dart';
 import '../../profile/providers/primary_profile_provider.dart';
 import '../models/birthday_reminder_time.dart';
 import '../models/saved_person.dart';
@@ -117,6 +118,27 @@ class RemindersEnabledNotifier extends Notifier<bool> {
       return;
     }
     await ref.read(notificationGatewayProvider).cancelPersonReminders(personId);
+  }
+
+  Future<void> syncLifeEvent(LifeEvent event) async {
+    if (!state) {
+      return;
+    }
+    await ref
+        .read(notificationGatewayProvider)
+        .syncLifeEvent(
+          event,
+          reminderTime: ref.read(birthdayReminderTimeProvider),
+        );
+  }
+
+  Future<void> removeLifeEvent(String eventId) async {
+    if (!state) {
+      return;
+    }
+    await ref
+        .read(notificationGatewayProvider)
+        .cancelLifeEventReminders(eventId);
   }
 
   Future<bool> ensureScheduleSchema() async {

@@ -27,6 +27,11 @@ class LifeEventShareCard extends StatelessWidget {
         ? 'Add your birthday to see your age at this moment.'
         : '${details.isUpcoming ? 'You will be' : 'You were'} '
               '${age.years} years, ${age.months} months & ${age.days} days old';
+    final relativeLine = details.isRecurring
+        ? details.isToday
+              ? '${LifeEventUtils.anniversaryLabel(details.anniversaryNumber!)} anniversary today'
+              : '${LifeEventUtils.anniversaryLabel(details.anniversaryNumber!)} anniversary ${details.relativeText.toLowerCase()}'
+        : details.relativeText;
 
     return Container(
       width: 360,
@@ -74,7 +79,7 @@ class LifeEventShareCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            details.relativeText,
+            relativeLine,
             style: GoogleFonts.inter(
               color: _accent,
               fontSize: 18,

@@ -35,4 +35,11 @@ abstract interface class NotificationGateway {
   });
 
   Future<void> cancelPersonReminders(String personId);
+
+  Future<void> syncLifeEvent(
+    LifeEvent event, {
+    BirthdayReminderTime reminderTime = BirthdayReminderTime.defaultTime,
+  });
+
+  Future<void> cancelLifeEventReminders(String eventId);
 }
