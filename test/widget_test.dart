@@ -42,7 +42,7 @@ void main() {
 
     expect(find.text('Age Calculator'), findsWidgets);
     expect(find.text('Age, date, birthday, and time tools'), findsOneWidget);
-    expect(find.text('Date Difference'), findsOneWidget);
+    expect(find.text('Date Tools'), findsOneWidget);
     expect(find.text('Life Timeline'), findsOneWidget);
     expect(find.text('Life Calendar'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Settings'), 400);
@@ -114,12 +114,39 @@ void main() {
     expect(find.text('Age, date, birthday, and time tools'), findsOneWidget);
   });
 
+  testWidgets('Date Tools hub exposes every date utility', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(tester);
+
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -400));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Date Tools'));
+    await tester.pumpAndSettle();
+
+    for (final title in [
+      'Date Difference',
+      'Date Add / Subtract',
+      'Working Days',
+      'Weekday Finder',
+      'DOB Finder',
+    ]) {
+      expect(find.text(title), findsOneWidget);
+    }
+    await tester.drag(find.byType(ListView), const Offset(0, -400));
+    await tester.pumpAndSettle();
+    expect(find.text('Countdown'), findsOneWidget);
+    expect(find.text('Leap Year'), findsOneWidget);
+  });
+
   testWidgets('opens date difference screen from the dashboard', (
     WidgetTester tester,
   ) async {
     await pumpApp(tester);
 
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -400));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Date Tools'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Date Difference'));
     await tester.pumpAndSettle();

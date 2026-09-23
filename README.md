@@ -6,12 +6,15 @@ for Android and iOS and keeps personal inputs on the device.
 ## Current features
 
 - Exact age calculation with lifetime totals, zodiac, numerology, and milestones
-- Date Difference, Age Difference, and Leap Year tools
+- Date Tools hub with Date Difference, Date Add/Subtract, Working Days,
+  Weekday Finder, DOB Finder, Countdown, and Leap Year
 - Saved birthdays with local yearly reminders
 - Famous Birthdays and On This Day results
 - Life Timeline and Life Calendar views
 - Android home-screen widget for age and birthday/event information
 - Light and dark themes, sharing, and privacy/about screens
+- Conservative native in-app review prompts after meaningful local actions;
+  Settings also provides an explicit Rate Age Calculator store action
 
 ## Data and connectivity
 
@@ -19,6 +22,12 @@ The calculators, saved birthdays, reminders, and preferences are local and
 offline-first. Famous Birthdays and On This Day may make read-only HTTPS
 requests to Wikimedia's On This Day endpoint; bundled curated data is used as
 a local supplement/fallback. No account or backend is required.
+
+Date Tools calculations remain local and offline. Working Days counts both
+boundary dates and excludes public holidays; it supports Saturday/Sunday and
+Friday/Saturday weekend presets without location detection or a holiday API.
+Engagement state used to decide whether the platform review prompt is
+appropriate is stored only in SharedPreferences and is never uploaded.
 
 ## Ads
 

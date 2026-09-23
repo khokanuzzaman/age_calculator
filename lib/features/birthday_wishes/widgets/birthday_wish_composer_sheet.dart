@@ -6,6 +6,8 @@ import '../../../core/analytics/analytics_event.dart';
 import '../../../core/analytics/app_analytics.dart';
 import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/engagement/engagement_action.dart';
+import '../../../core/engagement/engagement_provider.dart';
 import '../../../core/sharing/share_engine.dart';
 import '../../../core/sharing/share_payload.dart';
 import '../../saved_birthdays/models/saved_person.dart';
@@ -133,6 +135,9 @@ class _BirthdayWishComposerState extends ConsumerState<_BirthdayWishComposer> {
           AnalyticsEvent.birthdayWishShared,
           parameters: const <String, Object>{'format': 'text'},
         );
+    ref
+        .read(engagementTrackerProvider)
+        .recordMeaningfulActionSafely(EngagementAction.share);
   }
 
   @override

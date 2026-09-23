@@ -4,6 +4,8 @@ import '../../../core/analytics/analytics_classification.dart';
 import '../../../core/analytics/analytics_event.dart';
 import '../../../core/analytics/app_analytics.dart';
 import '../../../core/analytics/app_analytics_provider.dart';
+import '../../../core/engagement/engagement_action.dart';
+import '../../../core/engagement/engagement_provider.dart';
 import '../../../core/utils/date_utils.dart';
 import '../domain/models/age_result.dart';
 
@@ -105,6 +107,13 @@ class AgeCalculatorNotifier extends Notifier<AgeCalculatorState> {
             'result_age_group': AnalyticsClassification.ageGroup(result.years),
           },
         );
+    try {
+      ref
+          .read(engagementTrackerProvider)
+          .recordMeaningfulActionSafely(EngagementAction.age);
+    } catch (_) {
+      // Engagement tracking is optional and never blocks the calculation.
+    }
   }
 
   void reset() {

@@ -4,6 +4,8 @@ import '../../../app/theme/theme_mode_notifier.dart';
 import '../../../core/analytics/analytics_event.dart';
 import '../../../core/analytics/app_analytics.dart';
 import '../../../core/analytics/app_analytics_provider.dart';
+import '../../../core/engagement/engagement_action.dart';
+import '../../../core/engagement/engagement_provider.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../age_calculator/utils/age_calculation_utils.dart';
 import '../data/saved_birthdays_repository.dart';
@@ -57,6 +59,15 @@ class SavedBirthdaysNotifier extends Notifier<List<SavedPerson>> {
                   'has_relation': person.relation?.trim().isNotEmpty == true,
                 },
         );
+    if (!isUpdate) {
+      try {
+        ref
+            .read(engagementTrackerProvider)
+            .recordMeaningfulActionSafely(EngagementAction.people);
+      } catch (_) {
+        // Engagement tracking is optional and never blocks a local save.
+      }
+    }
     if (previous != null && previous.isFavorite != person.isFavorite) {
       ref
           .read(appAnalyticsProvider)

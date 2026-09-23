@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show FilteringTextInputFormatter, LengthLimitingTextInputFormatter;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/analytics/analytics_event.dart';
+import '../../../core/analytics/app_analytics.dart';
+import '../../../core/analytics/app_analytics_provider.dart';
+import '../../../core/engagement/engagement_action.dart';
+import '../../../core/engagement/engagement_provider.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_primary_button.dart';
 import '../../../shared/widgets/app_screen_backdrop.dart';
@@ -10,14 +16,14 @@ import '../../../shared/widgets/animated_result_card.dart';
 import '../utils/leap_year_utils.dart';
 import '../widgets/leap_year_result_card.dart';
 
-class LeapYearScreen extends StatefulWidget {
+class LeapYearScreen extends ConsumerStatefulWidget {
   const LeapYearScreen({super.key});
 
   @override
-  State<LeapYearScreen> createState() => _LeapYearScreenState();
+  ConsumerState<LeapYearScreen> createState() => _LeapYearScreenState();
 }
 
-class _LeapYearScreenState extends State<LeapYearScreen> {
+class _LeapYearScreenState extends ConsumerState<LeapYearScreen> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   LeapYearResult? _result;
@@ -47,6 +53,17 @@ class _LeapYearScreenState extends State<LeapYearScreen> {
     setState(() {
       _result = LeapYearUtils.calculate(year);
     });
+    ref
+        .read(appAnalyticsProvider)
+        .logEventSafely(
+          AnalyticsEvent.leapYearChecked,
+          parameters: <String, Object>{
+            'result': _result!.isLeapYear ? 'leap' : 'common',
+          },
+        );
+    ref
+        .read(engagementTrackerProvider)
+        .recordMeaningfulActionSafely(EngagementAction.dateTools);
   }
 
   void _reset() {

@@ -4,6 +4,8 @@ import '../../../app/theme/theme_mode_notifier.dart';
 import '../../../core/analytics/analytics_event.dart';
 import '../../../core/analytics/app_analytics.dart';
 import '../../../core/analytics/app_analytics_provider.dart';
+import '../../../core/engagement/engagement_action.dart';
+import '../../../core/engagement/engagement_provider.dart';
 import '../data/primary_profile_repository.dart';
 import '../models/primary_profile.dart';
 
@@ -37,6 +39,13 @@ class PrimaryProfileNotifier extends Notifier<PrimaryProfile?> {
               ? AnalyticsEvent.primaryProfileUpdated
               : AnalyticsEvent.primaryProfileSaved,
         );
+    try {
+      ref
+          .read(engagementTrackerProvider)
+          .recordMeaningfulActionSafely(EngagementAction.profile);
+    } catch (_) {
+      // Engagement tracking is optional and never blocks a local save.
+    }
   }
 
   Future<void> clear() async {

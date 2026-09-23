@@ -216,10 +216,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       _tool(
                         accent: _ToolColors.dateDiff,
-                        title: 'Date Difference',
-                        description: 'Gap between dates',
-                        icon: Icons.date_range_outlined,
-                        route: AppRoutes.dateDifference,
+                        title: 'Date Tools',
+                        description: 'Date math in one place',
+                        icon: Icons.build_circle_outlined,
+                        route: AppRoutes.dateTools,
                       ),
                       _tool(
                         accent: _ToolColors.ageDiff,
@@ -227,13 +227,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         description: 'Compare two ages',
                         icon: Icons.people_alt_outlined,
                         route: AppRoutes.ageDifference,
-                      ),
-                      _tool(
-                        accent: _ToolColors.leap,
-                        title: 'Leap Year',
-                        description: 'Check leap years',
-                        icon: Icons.event_repeat_outlined,
-                        route: AppRoutes.leapYear,
                       ),
                       _tool(
                         accent: _ToolColors.famous,
@@ -684,7 +677,6 @@ class _ToolColors {
   static const Color calendar = Color(0xFF8B5CF6);
   static const Color dateDiff = Color(0xFF14B8A6);
   static const Color ageDiff = Color(0xFF6366F1);
-  static const Color leap = Color(0xFF22C55E);
   static const Color famous = Color(0xFFF59E0B);
   static const Color history = Color(0xFFA855F7);
   static const Color settings = Color(0xFF64748B);

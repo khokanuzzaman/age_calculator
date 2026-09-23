@@ -63,6 +63,17 @@ void main() {
       AnalyticsEvent.lifeEventReminderPreferencesChanged.name,
       'life_event_reminder_preferences_changed',
     );
+    expect(AnalyticsEvent.dateToolsOpened.name, 'date_tools_opened');
+    expect(AnalyticsEvent.dateAddSubtractUsed.name, 'date_add_subtract_used');
+    expect(AnalyticsEvent.workingDaysUsed.name, 'working_days_used');
+    expect(AnalyticsEvent.weekdayFinderUsed.name, 'weekday_finder_used');
+    expect(AnalyticsEvent.dobFinderUsed.name, 'dob_finder_used');
+    expect(AnalyticsEvent.countdownUsed.name, 'countdown_used');
+    expect(AnalyticsEvent.leapYearChecked.name, 'leap_year_checked');
+    expect(
+      AnalyticsEvent.ratingPromptRequested.name,
+      'rating_prompt_requested',
+    );
   });
 
   test('the default analytics implementation is a safe no-op', () async {

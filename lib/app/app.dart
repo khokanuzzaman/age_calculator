@@ -17,6 +17,12 @@ import '../features/age_calculator/presentation/screens/home_screen.dart'
     as age_calculator;
 import '../features/age_difference/screens/age_difference_screen.dart';
 import '../features/date_difference/screens/date_difference_screen.dart';
+import '../features/date_tools/screens/countdown_screen.dart';
+import '../features/date_tools/screens/date_add_subtract_screen.dart';
+import '../features/date_tools/screens/date_tools_screen.dart';
+import '../features/date_tools/screens/dob_finder_screen.dart';
+import '../features/date_tools/screens/weekday_finder_screen.dart';
+import '../features/date_tools/screens/working_days_screen.dart';
 import '../features/famous_birthdays/screens/famous_birthdays_screen.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/leap_year/screens/leap_year_screen.dart';
@@ -119,6 +125,12 @@ class _AgeCalculatorAppState extends ConsumerState<AgeCalculatorApp> {
         AppRoutes.ageCalculator: (_) =>
             const age_calculator.AgeCalculatorScreen(),
         AppRoutes.dateDifference: (_) => const DateDifferenceScreen(),
+        AppRoutes.dateTools: (_) => const DateToolsScreen(),
+        AppRoutes.dateAddSubtract: (_) => const DateAddSubtractScreen(),
+        AppRoutes.workingDays: (_) => const WorkingDaysScreen(),
+        AppRoutes.weekdayFinder: (_) => const WeekdayFinderScreen(),
+        AppRoutes.dobFinder: (_) => const DobFinderScreen(),
+        AppRoutes.countdown: (_) => const CountdownScreen(),
         AppRoutes.ageDifference: (_) => const AgeDifferenceScreen(),
         AppRoutes.leapYear: (_) => const LeapYearScreen(),
         AppRoutes.famousBirthdays: (_) => const FamousBirthdaysScreen(),

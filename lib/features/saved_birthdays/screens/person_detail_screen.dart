@@ -6,6 +6,8 @@ import '../../../core/analytics/analytics_event.dart';
 import '../../../core/analytics/app_analytics.dart';
 import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/engagement/engagement_action.dart';
+import '../../../core/engagement/engagement_provider.dart';
 import '../../../core/sharing/app_store_links.dart';
 import '../../../core/sharing/share_engine.dart';
 import '../../../core/sharing/share_payload.dart';
@@ -251,6 +253,9 @@ class _PersonDetailBody extends ConsumerWidget {
           AnalyticsEvent.birthdayShared,
           parameters: const <String, Object>{'format': 'text'},
         );
+    ref
+        .read(engagementTrackerProvider)
+        .recordMeaningfulActionSafely(EngagementAction.share);
   }
 
   Future<void> _shareCard(
@@ -270,6 +275,9 @@ class _PersonDetailBody extends ConsumerWidget {
             'format': result == ShareResult.image ? 'image' : 'text_fallback',
           },
         );
+    ref
+        .read(engagementTrackerProvider)
+        .recordMeaningfulActionSafely(EngagementAction.share);
   }
 
   Future<void> _delete(

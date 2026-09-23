@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/theme_mode_notifier.dart';
+import '../../../core/engagement/engagement_action.dart';
+import '../../../core/engagement/engagement_provider.dart';
 import '../data/life_events_repository.dart';
 import '../models/life_event.dart';
 import '../utils/life_event_utils.dart';
@@ -32,6 +34,15 @@ class LifeEventsNotifier extends Notifier<List<LifeEvent>> {
       next.add(event);
     }
     await _persist(next);
+    if (index < 0) {
+      try {
+        ref
+            .read(engagementTrackerProvider)
+            .recordMeaningfulActionSafely(EngagementAction.lifeEvent);
+      } catch (_) {
+        // Engagement tracking is optional and never blocks a local save.
+      }
+    }
     try {
       await ref.read(remindersEnabledProvider.notifier).syncLifeEvent(event);
     } catch (_) {

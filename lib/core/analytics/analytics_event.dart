@@ -45,7 +45,15 @@ enum AnalyticsEvent {
   lifeEventReminderPreferencesChanged(
     'life_event_reminder_preferences_changed',
   ),
-  lifeTimelineFilterChanged('life_timeline_filter_changed');
+  lifeTimelineFilterChanged('life_timeline_filter_changed'),
+  dateToolsOpened('date_tools_opened'),
+  dateAddSubtractUsed('date_add_subtract_used'),
+  workingDaysUsed('working_days_used'),
+  weekdayFinderUsed('weekday_finder_used'),
+  dobFinderUsed('dob_finder_used'),
+  countdownUsed('countdown_used'),
+  leapYearChecked('leap_year_checked'),
+  ratingPromptRequested('rating_prompt_requested');
 
   const AnalyticsEvent(this.name);
 

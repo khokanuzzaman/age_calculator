@@ -4,7 +4,11 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/theme/theme_mode_notifier.dart';
 import '../../../core/app_info/app_info_provider.dart';
+import '../../../core/analytics/analytics_event.dart';
+import '../../../core/analytics/app_analytics.dart';
+import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/engagement/engagement_provider.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_screen_backdrop.dart';
 import '../../../shared/widgets/theme_mode_bottom_sheet.dart';
@@ -152,6 +156,31 @@ class SettingsScreen extends ConsumerWidget {
                         const SizedBox(height: AppSpacing.sm),
                         _InfoRow(label: 'Version', value: version),
                         const SizedBox(height: AppSpacing.md),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.star_outline),
+                          title: const Text('Rate Age Calculator'),
+                          subtitle: const Text('Open the app store listing'),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () async {
+                            ref
+                                .read(appAnalyticsProvider)
+                                .logEventSafely(
+                                  AnalyticsEvent.rateAppClicked,
+                                  parameters: const <String, Object>{
+                                    'source': 'settings',
+                                  },
+                                );
+                            try {
+                              await ref
+                                  .read(reviewGatewayProvider)
+                                  .openStoreListing(appStoreId: '6802000455');
+                            } catch (_) {
+                              // Store links are best-effort and never block settings.
+                            }
+                          },
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
                         _LinkRow(
                           label: 'Privacy Policy',
                           value: AppStrings.privacyPolicyUrl,
