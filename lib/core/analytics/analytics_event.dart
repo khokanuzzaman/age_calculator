@@ -1,6 +1,8 @@
-/// Event names reserved for the future analytics vendor integration.
+/// Product events sent to the configured analytics provider.
 enum AnalyticsEvent {
-  appOpen('app_open'),
+  // Firebase automatically collects `app_open`; use a separate product
+  // event name so the app does not double-log that SDK event.
+  appOpen('product_app_open'),
   ageCalculated('age_calculated'),
   ageResultShared('age_result_shared'),
   birthdaySaved('birthday_saved'),

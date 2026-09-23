@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('centralizes the required analytics event names', () {
-    expect(AnalyticsEvent.appOpen.name, 'app_open');
+    expect(AnalyticsEvent.appOpen.name, 'product_app_open');
     expect(AnalyticsEvent.ageCalculated.name, 'age_calculated');
     expect(AnalyticsEvent.ageResultShared.name, 'age_result_shared');
     expect(AnalyticsEvent.birthdaySaved.name, 'birthday_saved');

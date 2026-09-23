@@ -14,12 +14,15 @@ import 'core/ads/ads_config.dart';
 import 'core/ads/app_open_ad_manager.dart';
 import 'core/ads/consent_service.dart';
 import 'core/ads/interstitial_ad_manager.dart';
+import 'core/analytics/app_analytics_provider.dart';
+import 'core/firebase/firebase_bootstrap.dart';
 import 'core/notifications/notification_service.dart';
 import 'core/widgets/home_widget_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   GoogleFonts.config.allowRuntimeFetching = false;
+  final firebaseStartup = await FirebaseBootstrap.initialize();
   final sharedPreferences = await SharedPreferences.getInstance();
 
   // Best-effort: prepare notifications so scheduled birthday reminders fire.
@@ -40,6 +43,7 @@ Future<void> main() async {
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+        appAnalyticsProvider.overrideWithValue(firebaseStartup.analytics),
       ],
       child: const AgeCalculatorApp(),
     ),
