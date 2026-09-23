@@ -187,10 +187,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       _tool(
                         accent: _ToolColors.saved,
-                        title: 'Saved Birthdays',
-                        description: 'Track loved ones',
+                        title: 'My People',
+                        description: 'Track the people you love',
                         icon: Icons.favorite_outline,
                         route: AppRoutes.savedBirthdays,
+                        target: 'my_people',
                       ),
                       _tool(
                         accent: _ToolColors.timeline,
@@ -272,6 +273,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required String description,
     required IconData icon,
     required String route,
+    String? target,
   }) {
     return ToolMenuCard(
       accent: accent,
@@ -279,7 +281,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       description: description,
       icon: icon,
       onTap: () {
-        _logAction(route.replaceFirst('/', ''));
+        _logAction(target ?? route.replaceFirst('/', ''));
         Navigator.of(context).pushNamed(route);
       },
     );
@@ -301,9 +303,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   void _openUpcoming(UpcomingItem item) {
     _logAction(
-      item.type == UpcomingItemType.birthday
-          ? 'saved_birthdays'
-          : 'life_timeline',
+      item.type == UpcomingItemType.birthday ? 'my_people' : 'life_timeline',
     );
     Navigator.of(context).pushNamed(
       item.type == UpcomingItemType.birthday
@@ -316,7 +316,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _logAction(target);
     final route = switch (target) {
       'profile' => AppRoutes.profile,
-      'saved_birthdays' => AppRoutes.savedBirthdays,
+      'my_people' => AppRoutes.savedBirthdays,
       'life_timeline' => AppRoutes.lifeTimeline,
       'life_calendar' => AppRoutes.lifeCalendar,
       _ => AppRoutes.home,
@@ -462,9 +462,9 @@ class _PersonalizedContent extends StatelessWidget {
               onTap: onProfile,
             ),
             _ActionChip(
-              label: 'Saved Birthdays',
+              label: 'My People',
               icon: Icons.favorite_outline,
-              onTap: () => onQuickAction('saved_birthdays'),
+              onTap: () => onQuickAction('my_people'),
             ),
             _ActionChip(
               label: 'Life Timeline',

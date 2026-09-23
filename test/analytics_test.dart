@@ -32,6 +32,21 @@ void main() {
     expect(AnalyticsEvent.timelineEventAdded.name, 'timeline_event_added');
     expect(AnalyticsEvent.timelineEventUpdated.name, 'timeline_event_updated');
     expect(AnalyticsEvent.timelineEventDeleted.name, 'timeline_event_deleted');
+    expect(AnalyticsEvent.myPeopleOpened.name, 'my_people_opened');
+    expect(AnalyticsEvent.personDetailOpened.name, 'person_detail_opened');
+    expect(
+      AnalyticsEvent.birthdayFavoriteChanged.name,
+      'birthday_favorite_changed',
+    );
+    expect(
+      AnalyticsEvent.birthdayReminderPreferencesChanged.name,
+      'birthday_reminder_preferences_changed',
+    );
+    expect(AnalyticsEvent.birthdayShared.name, 'birthday_shared');
+    expect(
+      AnalyticsEvent.myPeopleFilterChanged.name,
+      'my_people_filter_changed',
+    );
   });
 
   test('the default analytics implementation is a safe no-op', () async {

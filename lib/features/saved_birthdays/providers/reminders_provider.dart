@@ -7,6 +7,8 @@ import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/notifications/notification_gateway_provider.dart';
 import '../../life_timeline/providers/life_events_provider.dart';
 import '../../profile/providers/primary_profile_provider.dart';
+import '../models/birthday_reminder_time.dart';
+import '../models/saved_person.dart';
 import 'saved_birthdays_provider.dart';
 
 /// Whether the user has enabled yearly birthday reminders.
@@ -15,8 +17,26 @@ final remindersEnabledProvider =
       RemindersEnabledNotifier.new,
     );
 
+final birthdayReminderTimeProvider = Provider<BirthdayReminderTime>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return BirthdayReminderTime(
+    hour:
+        prefs.getInt(_birthdayReminderHourKey) ??
+        BirthdayReminderTime.defaultTime.hour,
+    minute:
+        prefs.getInt(_birthdayReminderMinuteKey) ??
+        BirthdayReminderTime.defaultTime.minute,
+  ).normalized();
+});
+
+const _scheduleSchemaVersionKey = 'notification_schedule_schema_version';
+const _scheduleSchemaVersion = 2;
+const _birthdayReminderHourKey = 'birthday_reminder_time_hour';
+const _birthdayReminderMinuteKey = 'birthday_reminder_time_minute';
+
 class RemindersEnabledNotifier extends Notifier<bool> {
   static const _key = 'birthday_reminders_enabled';
+  Future<bool>? _schemaMigration;
   @override
   bool build() {
     return ref.read(sharedPreferencesProvider).getBool(_key) ?? false;
@@ -52,7 +72,10 @@ class RemindersEnabledNotifier extends Notifier<bool> {
               'permission_granted': true,
             },
           );
-      await _rescheduleEverything();
+      final migrated = await ensureScheduleSchema();
+      if (!migrated) {
+        await _rescheduleEverything();
+      }
       return true;
     }
 
@@ -75,6 +98,59 @@ class RemindersEnabledNotifier extends Notifier<bool> {
       return;
     }
     await _rescheduleEverything();
+  }
+
+  Future<void> syncPerson(SavedPerson person) async {
+    if (!state) {
+      return;
+    }
+    await ref
+        .read(notificationGatewayProvider)
+        .syncPerson(
+          person,
+          reminderTime: ref.read(birthdayReminderTimeProvider),
+        );
+  }
+
+  Future<void> removePerson(String personId) async {
+    if (!state) {
+      return;
+    }
+    await ref.read(notificationGatewayProvider).cancelPersonReminders(personId);
+  }
+
+  Future<bool> ensureScheduleSchema() async {
+    final running = _schemaMigration;
+    if (running != null) {
+      return running;
+    }
+    final migration = _runScheduleSchemaMigration();
+    _schemaMigration = migration.whenComplete(() => _schemaMigration = null);
+    return migration;
+  }
+
+  Future<bool> _runScheduleSchemaMigration() async {
+    if (!state) {
+      return false;
+    }
+    final prefs = ref.read(sharedPreferencesProvider);
+    if (prefs.getInt(_scheduleSchemaVersionKey) == _scheduleSchemaVersion) {
+      return false;
+    }
+    await _rescheduleEverything();
+    await prefs.setInt(_scheduleSchemaVersionKey, _scheduleSchemaVersion);
+    return true;
+  }
+
+  Future<void> setBirthdayReminderTime(BirthdayReminderTime time) async {
+    final normalized = time.normalized();
+    final prefs = ref.read(sharedPreferencesProvider);
+    await prefs.setInt(_birthdayReminderHourKey, normalized.hour);
+    await prefs.setInt(_birthdayReminderMinuteKey, normalized.minute);
+    ref.invalidate(birthdayReminderTimeProvider);
+    if (state) {
+      await _rescheduleEverything();
+    }
   }
 
   /// Re-syncs all reminders after a life event changes.
@@ -102,10 +178,16 @@ class RemindersEnabledNotifier extends Notifier<bool> {
     } else {
       await ref
           .read(notificationGatewayProvider)
-          .scheduleOwnBirthdayCountdown(birthDate);
+          .scheduleOwnBirthdayCountdown(
+            birthDate,
+            reminderTime: ref.read(birthdayReminderTimeProvider),
+          );
       await ref
           .read(notificationGatewayProvider)
-          .scheduleNextDayMilestone(birthDate);
+          .scheduleNextDayMilestone(
+            birthDate,
+            reminderTime: ref.read(birthdayReminderTimeProvider),
+          );
     }
   }
 
@@ -117,15 +199,22 @@ class RemindersEnabledNotifier extends Notifier<bool> {
         .rescheduleAll(
           ref.read(savedBirthdaysProvider),
           events: ref.read(lifeEventsProvider),
+          reminderTime: ref.read(birthdayReminderTimeProvider),
         );
     final ownDob = _readOwnBirthDate();
     if (ownDob != null) {
       await ref
           .read(notificationGatewayProvider)
-          .scheduleOwnBirthdayCountdown(ownDob);
+          .scheduleOwnBirthdayCountdown(
+            ownDob,
+            reminderTime: ref.read(birthdayReminderTimeProvider),
+          );
       await ref
           .read(notificationGatewayProvider)
-          .scheduleNextDayMilestone(ownDob);
+          .scheduleNextDayMilestone(
+            ownDob,
+            reminderTime: ref.read(birthdayReminderTimeProvider),
+          );
     }
   }
 

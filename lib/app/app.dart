@@ -130,5 +130,8 @@ class _AgeCalculatorAppState extends ConsumerState<AgeCalculatorApp> {
           .catchError((_) {}),
     );
     unawaited(ref.read(homeWidgetServiceProvider).refresh().catchError((_) {}));
+    unawaited(
+      ref.read(remindersEnabledProvider.notifier).ensureScheduleSchema(),
+    );
   }
 }

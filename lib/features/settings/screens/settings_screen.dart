@@ -9,6 +9,7 @@ import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_screen_backdrop.dart';
 import '../../../shared/widgets/theme_mode_bottom_sheet.dart';
 import '../../saved_birthdays/providers/reminders_provider.dart';
+import '../../saved_birthdays/models/birthday_reminder_time.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -17,6 +18,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     final remindersEnabled = ref.watch(remindersEnabledProvider);
+    final reminderTime = ref.watch(birthdayReminderTimeProvider);
     final version = displayAppVersion(ref.watch(appVersionProvider));
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -79,9 +81,9 @@ class SettingsScreen extends ConsumerWidget {
                           secondary: const Icon(
                             Icons.notifications_active_outlined,
                           ),
-                          title: const Text('Birthday and event reminders'),
+                          title: const Text('Reminders'),
                           subtitle: const Text(
-                            'Get local reminders for birthdays and life events',
+                            'Birthdays, personal milestones and timeline events',
                           ),
                           value: remindersEnabled,
                           onChanged: (value) async {
@@ -104,6 +106,40 @@ class SettingsScreen extends ConsumerWidget {
                             }
                           },
                         ),
+                        if (remindersEnabled)
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.schedule_outlined),
+                            title: const Text('Birthday reminder time'),
+                            subtitle: Text(
+                              MaterialLocalizations.of(context).formatTimeOfDay(
+                                TimeOfDay(
+                                  hour: reminderTime.hour,
+                                  minute: reminderTime.minute,
+                                ),
+                              ),
+                            ),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () async {
+                              final selected = await showTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay(
+                                  hour: reminderTime.hour,
+                                  minute: reminderTime.minute,
+                                ),
+                              );
+                              if (selected != null && context.mounted) {
+                                await ref
+                                    .read(remindersEnabledProvider.notifier)
+                                    .setBirthdayReminderTime(
+                                      BirthdayReminderTime(
+                                        hour: selected.hour,
+                                        minute: selected.minute,
+                                      ),
+                                    );
+                              }
+                            },
+                          ),
                       ],
                     ),
                   ),

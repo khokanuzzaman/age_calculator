@@ -194,7 +194,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 Text(
-                  'Saved Birthdays, Life Timeline events, and app settings are kept when you clear your profile.',
+                  'My People, Life Timeline events, and app settings are kept when you clear your profile.',
                   style: textTheme.bodySmall?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),
@@ -233,7 +233,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Clear profile?'),
         content: const Text(
-          'This removes your personal dashboard, reminders and widget birthday. Saved Birthdays and Life Timeline events will stay on this device.',
+          'This removes your personal dashboard, reminders and widget birthday. My People and Life Timeline events will stay on this device.',
         ),
         actions: [
           TextButton(

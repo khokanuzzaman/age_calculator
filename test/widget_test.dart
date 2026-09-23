@@ -147,4 +147,25 @@ void main() {
     expect(find.text('Version 1.4.0 (10)'), findsOneWidget);
     expect(find.text('Made with Flutter'), findsOneWidget);
   });
+
+  testWidgets('opens My People with search and filters', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(
+      tester,
+      preferences: {
+        'saved_birthdays_v1':
+            '[{"id":"mom","name":"Mom","birthDateMs":631152000000,"emoji":"🎂"}]',
+      },
+    );
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -300));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('My People'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('My People'), findsOneWidget);
+    expect(find.text('Search people'), findsOneWidget);
+    expect(find.text('Upcoming'), findsOneWidget);
+    expect(find.text('Mom'), findsOneWidget);
+  });
 }

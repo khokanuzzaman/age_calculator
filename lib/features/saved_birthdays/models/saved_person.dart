@@ -1,4 +1,5 @@
 import '../../../core/utils/date_utils.dart';
+import 'birthday_reminder_preferences.dart';
 
 /// A birthday the user has saved to track (family, friend, pet, etc.).
 class SavedPerson {
@@ -8,6 +9,8 @@ class SavedPerson {
     required this.birthDate,
     this.emoji = '🎂',
     this.relation,
+    this.isFavorite = false,
+    this.reminderPreferences = const BirthdayReminderPreferences(),
   });
 
   final String id;
@@ -15,6 +18,8 @@ class SavedPerson {
   final DateTime birthDate;
   final String emoji;
   final String? relation;
+  final bool isFavorite;
+  final BirthdayReminderPreferences reminderPreferences;
 
   /// Current age in whole years as of [now].
   int ageInYears(DateTime now) {
@@ -29,6 +34,8 @@ class SavedPerson {
     DateTime? birthDate,
     String? emoji,
     String? relation,
+    bool? isFavorite,
+    BirthdayReminderPreferences? reminderPreferences,
   }) {
     return SavedPerson(
       id: id,
@@ -36,6 +43,8 @@ class SavedPerson {
       birthDate: birthDate ?? this.birthDate,
       emoji: emoji ?? this.emoji,
       relation: relation ?? this.relation,
+      isFavorite: isFavorite ?? this.isFavorite,
+      reminderPreferences: reminderPreferences ?? this.reminderPreferences,
     );
   }
 
@@ -50,6 +59,10 @@ class SavedPerson {
           ? (json['emoji'] as String).trim()
           : '🎂',
       relation: (json['relation'] as String?)?.trim(),
+      isFavorite: json['isFavorite'] as bool? ?? false,
+      reminderPreferences: BirthdayReminderPreferences.fromJson(
+        (json['reminderPreferences'] as Map?)?.cast<String, dynamic>(),
+      ),
     );
   }
 
@@ -60,6 +73,8 @@ class SavedPerson {
       'birthDateMs': birthDate.millisecondsSinceEpoch,
       'emoji': emoji,
       'relation': relation,
+      'isFavorite': isFavorite,
+      'reminderPreferences': reminderPreferences.toJson(),
     };
   }
 }

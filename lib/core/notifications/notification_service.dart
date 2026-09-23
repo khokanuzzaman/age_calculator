@@ -5,13 +5,16 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../../features/age_calculator/utils/age_calculation_utils.dart';
 import '../../features/life_timeline/models/life_event.dart';
+import '../../features/saved_birthdays/models/birthday_reminder_preferences.dart';
+import '../../features/saved_birthdays/models/birthday_reminder_time.dart';
 import '../../features/saved_birthdays/models/saved_person.dart';
 import '../utils/date_utils.dart';
 import 'notification_gateway.dart';
+import 'notification_id_factory.dart';
 
 /// Schedules yearly local notifications for saved birthdays.
 ///
-/// Reminders fire at 9:00 AM on each person's birthday and repeat every year.
+/// Reminders fire at the user's configured local time and repeat every year.
 /// Scheduling is inexact (so no exact-alarm permission is required) — exact
 /// timing is unnecessary for a birthday greeting.
 class NotificationService implements NotificationGateway {
@@ -28,7 +31,6 @@ class NotificationService implements NotificationGateway {
   static const _channelName = 'Birthday Reminders';
   static const _channelDescription =
       'Yearly reminders for your saved birthdays';
-  static const _reminderHour = 9;
 
   // Second channel for the user's OWN reminders (kept separate from the saved
   // people channel above, which stays untouched).
@@ -37,12 +39,8 @@ class NotificationService implements NotificationGateway {
   static const _personalChannelDescription =
       'Your birthday countdown and day-milestones';
 
-  // Fixed, negative notification IDs for the user's own reminders. Saved-people
-  // IDs are `hashCode & 0x7fffffff` (always >= 0), so negative IDs can never
-  // collide with them.
-  static const _ownBirthdayBaseId = -1000; // lead id = base - daysBefore
-  static const _milestoneId = -2000;
-  static const _lifeEventBaseId = -1000000000;
+  // Fixed, negative notification IDs for the user's own reminders. Saved-person
+  // IDs use a separate positive namespace, so categories cannot collide.
   static const _ownBirthdayLeadDays = [7, 1, 0];
 
   Future<void> init() async {
@@ -95,51 +93,80 @@ class NotificationService implements NotificationGateway {
     return true;
   }
 
-  int _notificationId(String personId) => personId.hashCode & 0x7fffffff;
-
   int _lifeEventNotificationId(String eventId) {
-    return _lifeEventBaseId - (eventId.hashCode & 0x0fffffff);
+    return NotificationIdFactory.lifeEvent(eventId);
   }
 
-  Future<void> scheduleBirthday(SavedPerson person) async {
+  Future<void> scheduleBirthday(
+    SavedPerson person, {
+    BirthdayReminderTime reminderTime = BirthdayReminderTime.defaultTime,
+  }) async {
     await init();
-    final scheduled = _nextBirthdayAt9am(person.birthDate);
-
-    await _plugin.zonedSchedule(
-      _notificationId(person.id),
-      '🎂 ${person.name}\'s birthday!',
-      'Wish ${person.name} a happy birthday today.',
-      scheduled,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          _channelId,
-          _channelName,
-          channelDescription: _channelDescription,
-          importance: Importance.high,
-          priority: Priority.high,
-        ),
-        iOS: DarwinNotificationDetails(),
-      ),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.dateAndTime,
+    if (!person.reminderPreferences.enabled) {
+      return;
+    }
+    final now = tz.TZDateTime.now(tz.local);
+    final today = DateTime(now.year, now.month, now.day);
+    final leads = AgeCalculationUtils.birthdayCountdownLeads(
+      person.birthDate,
+      today,
+      leadDays: person.reminderPreferences.leadDays,
     );
+
+    for (final lead in leads) {
+      final scheduled = _atTime(lead.date, reminderTime);
+      if (!scheduled.isAfter(now)) {
+        continue;
+      }
+      final copy = _birthdayCopy(person, lead.daysBefore);
+      await _plugin.zonedSchedule(
+        NotificationIdFactory.savedBirthday(person.id, lead.daysBefore),
+        copy.title,
+        copy.body,
+        scheduled,
+        _birthdayDetails(),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.dateAndTime,
+      );
+    }
   }
 
   Future<void> cancelBirthday(String personId) async {
-    await init();
-    await _plugin.cancel(_notificationId(personId));
+    await cancelPersonReminders(personId);
   }
 
-  Future<void> scheduleLifeEvent(LifeEvent event) async {
+  @override
+  Future<void> syncPerson(
+    SavedPerson person, {
+    BirthdayReminderTime reminderTime = BirthdayReminderTime.defaultTime,
+  }) async {
+    await cancelPersonReminders(person.id);
+    await scheduleBirthday(person, reminderTime: reminderTime);
+  }
+
+  @override
+  Future<void> cancelPersonReminders(String personId) async {
+    await init();
+    for (final leadDay in BirthdayReminderPreferences.supportedLeadDays) {
+      await _plugin.cancel(
+        NotificationIdFactory.savedBirthday(personId, leadDay),
+      );
+    }
+  }
+
+  Future<void> scheduleLifeEvent(
+    LifeEvent event, {
+    BirthdayReminderTime reminderTime = BirthdayReminderTime.defaultTime,
+  }) async {
     await init();
     if (!event.reminderEnabled) {
       return;
     }
 
     final now = tz.TZDateTime.now(tz.local);
-    final scheduled = _at9am(event.eventDate);
+    final scheduled = _atTime(event.eventDate, reminderTime);
     if (!scheduled.isAfter(now)) {
       return;
     }
@@ -171,14 +198,15 @@ class NotificationService implements NotificationGateway {
   Future<void> rescheduleAll(
     List<SavedPerson> people, {
     List<LifeEvent> events = const [],
+    BirthdayReminderTime reminderTime = BirthdayReminderTime.defaultTime,
   }) async {
     await init();
     await _plugin.cancelAll();
     for (final person in people) {
-      await scheduleBirthday(person);
+      await scheduleBirthday(person, reminderTime: reminderTime);
     }
     for (final event in events) {
-      await scheduleLifeEvent(event);
+      await scheduleLifeEvent(event, reminderTime: reminderTime);
     }
   }
 
@@ -194,11 +222,14 @@ class NotificationService implements NotificationGateway {
   /// before the user's next birthday. Uses fixed negative IDs and repeats
   /// yearly, so it stays scheduled without needing the app to be reopened.
   @override
-  Future<void> scheduleOwnBirthdayCountdown(DateTime birthDate) async {
+  Future<void> scheduleOwnBirthdayCountdown(
+    DateTime birthDate, {
+    BirthdayReminderTime reminderTime = BirthdayReminderTime.defaultTime,
+  }) async {
     await init();
     // Clear previous leads first so a changed DOB doesn't leave stale dates.
     for (final d in _ownBirthdayLeadDays) {
-      await _plugin.cancel(_ownBirthdayBaseId - d);
+      await _plugin.cancel(NotificationIdFactory.ownBirthday(d));
     }
 
     final now = tz.TZDateTime.now(tz.local);
@@ -215,10 +246,10 @@ class NotificationService implements NotificationGateway {
         _ => 'Your birthday is in ${lead.daysBefore} days 🎉',
       };
       await _plugin.zonedSchedule(
-        _ownBirthdayBaseId - lead.daysBefore,
+        NotificationIdFactory.ownBirthday(lead.daysBefore),
         '🎂 Your birthday',
         body,
-        _at9am(lead.date),
+        _atTime(lead.date, reminderTime),
         _personalDetails(),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
@@ -232,16 +263,19 @@ class NotificationService implements NotificationGateway {
   /// Schedules a one-time reminder for the user's next round-number
   /// "days lived" milestone (e.g. 10,000 days).
   @override
-  Future<void> scheduleNextDayMilestone(DateTime birthDate) async {
+  Future<void> scheduleNextDayMilestone(
+    DateTime birthDate, {
+    BirthdayReminderTime reminderTime = BirthdayReminderTime.defaultTime,
+  }) async {
     await init();
-    await _plugin.cancel(_milestoneId);
+    await _plugin.cancel(NotificationIdFactory.milestone);
 
     final now = tz.TZDateTime.now(tz.local);
     final milestone = AgeCalculationUtils.nextDayMilestone(
       birthDate,
       DateTime(now.year, now.month, now.day),
     );
-    final scheduled = _at9am(milestone.date);
+    final scheduled = _atTime(milestone.date, reminderTime);
     if (!scheduled.isAfter(now)) {
       // Today's milestone time has already passed; the next one gets scheduled
       // the next time reminders are re-synced.
@@ -250,7 +284,7 @@ class NotificationService implements NotificationGateway {
 
     final formatted = AppDateUtils.formatLargeInteger(milestone.days);
     await _plugin.zonedSchedule(
-      _milestoneId,
+      NotificationIdFactory.milestone,
       '🎂 $formatted days old!',
       'You\'re $formatted days old today. What a milestone!',
       scheduled,
@@ -267,9 +301,9 @@ class NotificationService implements NotificationGateway {
   Future<void> cancelOwnReminders() async {
     await init();
     for (final d in _ownBirthdayLeadDays) {
-      await _plugin.cancel(_ownBirthdayBaseId - d);
+      await _plugin.cancel(NotificationIdFactory.ownBirthday(d));
     }
-    await _plugin.cancel(_milestoneId);
+    await _plugin.cancel(NotificationIdFactory.milestone);
   }
 
   NotificationDetails _personalDetails() => const NotificationDetails(
@@ -283,26 +317,47 @@ class NotificationService implements NotificationGateway {
     iOS: DarwinNotificationDetails(),
   );
 
-  tz.TZDateTime _at9am(DateTime date) {
+  tz.TZDateTime _atTime(DateTime date, BirthdayReminderTime time) {
     return tz.TZDateTime(
       tz.local,
       date.year,
       date.month,
       date.day,
-      _reminderHour,
+      time.hour,
+      time.minute,
     );
   }
 
-  tz.TZDateTime _nextBirthdayAt9am(DateTime birthDate) {
-    final now = tz.TZDateTime.now(tz.local);
-    final today = DateTime(now.year, now.month, now.day);
-    final next = AgeCalculationUtils.nextBirthday(birthDate, today);
-    return tz.TZDateTime(
-      tz.local,
-      next.year,
-      next.month,
-      next.day,
-      _reminderHour,
+  NotificationDetails _birthdayDetails() => const NotificationDetails(
+    android: AndroidNotificationDetails(
+      _channelId,
+      _channelName,
+      channelDescription: _channelDescription,
+      importance: Importance.high,
+      priority: Priority.high,
+    ),
+    iOS: DarwinNotificationDetails(),
+  );
+
+  ({String title, String body}) _birthdayCopy(
+    SavedPerson person,
+    int leadDays,
+  ) {
+    if (leadDays == 0) {
+      return (
+        title: '🎂 ${person.name}\'s birthday today!',
+        body: 'Wish ${person.name} a happy birthday.',
+      );
+    }
+    if (leadDays == 1) {
+      return (
+        title: '🎂 ${person.name}\'s birthday is tomorrow 🎉',
+        body: '1 day until ${person.name}\'s birthday.',
+      );
+    }
+    return (
+      title: '🎂 ${person.name}\'s birthday is coming up',
+      body: '$leadDays days until ${person.name}\'s birthday.',
     );
   }
 }

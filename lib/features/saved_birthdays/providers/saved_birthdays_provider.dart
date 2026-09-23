@@ -32,12 +32,19 @@ class SavedBirthdaysNotifier extends Notifier<List<SavedPerson>> {
     final next = [...state];
     final index = next.indexWhere((p) => p.id == person.id);
     final isUpdate = index >= 0;
+    final previous = isUpdate ? next[index] : null;
     if (index >= 0) {
       next[index] = person;
     } else {
       next.add(person);
     }
-    await _persist(_sorted(next));
+    final sorted = _sorted(next);
+    await _persist(sorted);
+    try {
+      await ref.read(remindersEnabledProvider.notifier).syncPerson(person);
+    } catch (_) {
+      // Reminder sync is best-effort; never block a local save.
+    }
     ref
         .read(appAnalyticsProvider)
         .logEventSafely(
@@ -50,6 +57,26 @@ class SavedBirthdaysNotifier extends Notifier<List<SavedPerson>> {
                   'has_relation': person.relation?.trim().isNotEmpty == true,
                 },
         );
+    if (previous != null && previous.isFavorite != person.isFavorite) {
+      ref
+          .read(appAnalyticsProvider)
+          .logEventSafely(
+            AnalyticsEvent.birthdayFavoriteChanged,
+            parameters: <String, Object>{'enabled': person.isFavorite},
+          );
+    }
+    if (previous != null &&
+        previous.reminderPreferences != person.reminderPreferences) {
+      ref
+          .read(appAnalyticsProvider)
+          .logEventSafely(
+            AnalyticsEvent.birthdayReminderPreferencesChanged,
+            parameters: <String, Object>{
+              'enabled': person.reminderPreferences.enabled,
+              'lead_count': person.reminderPreferences.leadDays.length,
+            },
+          );
+    }
   }
 
   Future<void> remove(String id) async {
@@ -59,19 +86,24 @@ class SavedBirthdaysNotifier extends Notifier<List<SavedPerson>> {
     }
     final next = state.where((p) => p.id != id).toList(growable: false);
     await _persist(next);
+    try {
+      await ref.read(remindersEnabledProvider.notifier).removePerson(id);
+    } catch (_) {
+      // Reminder cancellation is best-effort; the local delete already won.
+    }
     ref
         .read(appAnalyticsProvider)
         .logEventSafely(AnalyticsEvent.birthdayDeleted);
   }
 
+  Future<void> toggleFavorite(String id) async {
+    final person = state.firstWhere((item) => item.id == id);
+    await addOrUpdate(person.copyWith(isFavorite: !person.isFavorite));
+  }
+
   Future<void> _persist(List<SavedPerson> people) async {
     state = people;
     await ref.read(savedBirthdaysRepositoryProvider).save(people);
-    try {
-      await ref.read(remindersEnabledProvider.notifier).syncFromSavedList();
-    } catch (_) {
-      // Reminder sync is best-effort; never block a save on it.
-    }
   }
 
   /// Sort by who has a birthday coming up soonest.

@@ -25,7 +25,13 @@ enum AnalyticsEvent {
   primaryProfileUpdated('primary_profile_updated'),
   primaryProfileCleared('primary_profile_cleared'),
   todayDashboardViewed('today_dashboard_viewed'),
-  todayDashboardAction('today_dashboard_action');
+  todayDashboardAction('today_dashboard_action'),
+  myPeopleOpened('my_people_opened'),
+  personDetailOpened('person_detail_opened'),
+  birthdayFavoriteChanged('birthday_favorite_changed'),
+  birthdayReminderPreferencesChanged('birthday_reminder_preferences_changed'),
+  birthdayShared('birthday_shared'),
+  myPeopleFilterChanged('my_people_filter_changed');
 
   const AnalyticsEvent(this.name);
 
