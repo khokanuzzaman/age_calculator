@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/analytics/analytics_event.dart';
+import '../../../core/analytics/app_analytics.dart';
+import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/app_date_field.dart';
 import '../../../shared/widgets/app_primary_button.dart';
@@ -8,14 +12,15 @@ import '../../../shared/widgets/animated_result_card.dart';
 import '../utils/age_difference_utils.dart';
 import '../widgets/age_difference_result_card.dart';
 
-class AgeDifferenceScreen extends StatefulWidget {
+class AgeDifferenceScreen extends ConsumerStatefulWidget {
   const AgeDifferenceScreen({super.key});
 
   @override
-  State<AgeDifferenceScreen> createState() => _AgeDifferenceScreenState();
+  ConsumerState<AgeDifferenceScreen> createState() =>
+      _AgeDifferenceScreenState();
 }
 
-class _AgeDifferenceScreenState extends State<AgeDifferenceScreen> {
+class _AgeDifferenceScreenState extends ConsumerState<AgeDifferenceScreen> {
   DateTime? _personOne;
   DateTime? _personTwo;
   AgeDifferenceResult? _result;
@@ -35,12 +40,19 @@ class _AgeDifferenceScreenState extends State<AgeDifferenceScreen> {
       return;
     }
 
+    final result = AgeDifferenceUtils.calculate(
+      personOneBirthDate: personOne,
+      personTwoBirthDate: personTwo,
+    );
     setState(() {
-      _result = AgeDifferenceUtils.calculate(
-        personOneBirthDate: personOne,
-        personTwoBirthDate: personTwo,
-      );
+      _result = result;
     });
+    ref
+        .read(appAnalyticsProvider)
+        .logEventSafely(
+          AnalyticsEvent.ageDifferenceUsed,
+          parameters: <String, Object>{'same_age_year': result.isSameAge},
+        );
   }
 
   void _reset() {

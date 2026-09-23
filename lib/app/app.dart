@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/ads/ads_provider.dart';
 import '../core/ads/app_open_ad_manager.dart';
+import '../core/analytics/analytics_event.dart';
+import '../core/analytics/app_analytics.dart';
+import '../core/analytics/app_analytics_provider.dart';
 import '../core/constants/app_constants.dart';
 import '../core/widgets/home_widget_service.dart';
 import '../features/about/presentation/screens/about_screen.dart';
@@ -38,6 +41,7 @@ class _AgeCalculatorAppState extends ConsumerState<AgeCalculatorApp> {
   @override
   void initState() {
     super.initState();
+    ref.read(appAnalyticsProvider).logEventSafely(AnalyticsEvent.appOpen);
     // Show an App Open ad when the app returns to the foreground (and on the
     // cold-start resume transition when an ad is already loaded). Guards inside
     // the manager prevent stacking with interstitials and enforce the cap.

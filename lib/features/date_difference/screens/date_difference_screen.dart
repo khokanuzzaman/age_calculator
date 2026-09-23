@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/analytics/analytics_classification.dart';
+import '../../../core/analytics/analytics_event.dart';
+import '../../../core/analytics/app_analytics.dart';
+import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/app_date_field.dart';
 import '../../../shared/widgets/app_primary_button.dart';
@@ -8,14 +13,15 @@ import '../../../shared/widgets/app_screen_backdrop.dart';
 import '../utils/date_difference_utils.dart';
 import '../widgets/date_difference_result_card.dart';
 
-class DateDifferenceScreen extends StatefulWidget {
+class DateDifferenceScreen extends ConsumerStatefulWidget {
   const DateDifferenceScreen({super.key});
 
   @override
-  State<DateDifferenceScreen> createState() => _DateDifferenceScreenState();
+  ConsumerState<DateDifferenceScreen> createState() =>
+      _DateDifferenceScreenState();
 }
 
-class _DateDifferenceScreenState extends State<DateDifferenceScreen> {
+class _DateDifferenceScreenState extends ConsumerState<DateDifferenceScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
   DateDifferenceResult? _result;
@@ -34,9 +40,21 @@ class _DateDifferenceScreenState extends State<DateDifferenceScreen> {
       return;
     }
 
+    final result = DateDifferenceUtils.calculate(start, end);
     setState(() {
-      _result = DateDifferenceUtils.calculate(start, end);
+      _result = result;
     });
+    ref
+        .read(appAnalyticsProvider)
+        .logEventSafely(
+          AnalyticsEvent.dateDifferenceUsed,
+          parameters: <String, Object>{
+            'direction': AnalyticsClassification.dateDifferenceDirection(
+              start,
+              end,
+            ),
+          },
+        );
   }
 
   void _reset() {

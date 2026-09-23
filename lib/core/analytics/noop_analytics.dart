@@ -8,6 +8,6 @@ class NoopAnalytics implements AppAnalytics {
   @override
   Future<void> logEvent(
     AnalyticsEvent event, {
-    Map<String, Object?> parameters = const <String, Object?>{},
+    Map<String, Object> parameters = const <String, Object>{},
   }) async {}
 }

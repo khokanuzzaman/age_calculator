@@ -6,6 +6,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../app/app_routes.dart';
 import '../../../app/theme/theme_mode_notifier.dart';
 import '../../../core/ads/banner_ad_widget.dart';
+import '../../../core/analytics/analytics_event.dart';
+import '../../../core/analytics/app_analytics.dart';
+import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/app_screen_backdrop.dart';
 import '../../../shared/widgets/theme_mode_bottom_sheet.dart';
@@ -44,6 +47,14 @@ class HomeScreen extends ConsumerWidget {
                   await _openLink(AppStrings.privacyPolicyUrl);
                   break;
                 case _HomeMenuAction.shareApp:
+                  ref
+                      .read(appAnalyticsProvider)
+                      .logEventSafely(
+                        AnalyticsEvent.appShareClicked,
+                        parameters: const <String, Object>{
+                          'source': 'home_menu',
+                        },
+                      );
                   await Share.share(
                     AppStrings.shareAppMessage,
                     subject: AppStrings.appName,

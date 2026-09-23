@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/theme_mode_notifier.dart';
-import '../../../core/notifications/notification_service.dart';
+import '../../../core/analytics/analytics_event.dart';
+import '../../../core/analytics/app_analytics.dart';
+import '../../../core/analytics/app_analytics_provider.dart';
+import '../../../core/notifications/notification_gateway_provider.dart';
 import '../../life_timeline/providers/life_events_provider.dart';
 import 'saved_birthdays_provider.dart';
 
@@ -24,23 +27,45 @@ class RemindersEnabledNotifier extends Notifier<bool> {
   /// permission first; returns the resulting enabled state.
   Future<bool> setEnabled(bool enabled) async {
     final prefs = ref.read(sharedPreferencesProvider);
+    final notifications = ref.read(notificationGatewayProvider);
 
     if (enabled) {
-      final granted = await NotificationService.instance.requestPermission();
+      final granted = await notifications.requestPermission();
       if (!granted) {
         await prefs.setBool(_key, false);
         state = false;
+        ref
+            .read(appAnalyticsProvider)
+            .logEventSafely(
+              AnalyticsEvent.notificationPermissionDenied,
+              parameters: const <String, Object>{'permission_granted': false},
+            );
         return false;
       }
       await prefs.setBool(_key, true);
       state = true;
+      ref
+          .read(appAnalyticsProvider)
+          .logEventSafely(
+            AnalyticsEvent.birthdayReminderEnabled,
+            parameters: const <String, Object>{
+              'enabled': true,
+              'permission_granted': true,
+            },
+          );
       await _rescheduleEverything();
       return true;
     }
 
     await prefs.setBool(_key, false);
     state = false;
-    await NotificationService.instance.cancelAll();
+    await notifications.cancelAll();
+    ref
+        .read(appAnalyticsProvider)
+        .logEventSafely(
+          AnalyticsEvent.birthdayReminderEnabled,
+          parameters: const <String, Object>{'enabled': false},
+        );
     return false;
   }
 
@@ -82,26 +107,34 @@ class RemindersEnabledNotifier extends Notifier<bool> {
     }
 
     if (birthDate == null) {
-      await NotificationService.instance.cancelOwnReminders();
+      await ref.read(notificationGatewayProvider).cancelOwnReminders();
     } else {
-      await NotificationService.instance.scheduleOwnBirthdayCountdown(
-        birthDate,
-      );
-      await NotificationService.instance.scheduleNextDayMilestone(birthDate);
+      await ref
+          .read(notificationGatewayProvider)
+          .scheduleOwnBirthdayCountdown(birthDate);
+      await ref
+          .read(notificationGatewayProvider)
+          .scheduleNextDayMilestone(birthDate);
     }
   }
 
   /// Reschedules saved-people birthdays and, since `rescheduleAll` clears
   /// everything first, re-adds the user's own reminders from the stored DOB.
   Future<void> _rescheduleEverything() async {
-    await NotificationService.instance.rescheduleAll(
-      ref.read(savedBirthdaysProvider),
-      events: ref.read(lifeEventsProvider),
-    );
+    await ref
+        .read(notificationGatewayProvider)
+        .rescheduleAll(
+          ref.read(savedBirthdaysProvider),
+          events: ref.read(lifeEventsProvider),
+        );
     final ownDob = _readOwnBirthDate();
     if (ownDob != null) {
-      await NotificationService.instance.scheduleOwnBirthdayCountdown(ownDob);
-      await NotificationService.instance.scheduleNextDayMilestone(ownDob);
+      await ref
+          .read(notificationGatewayProvider)
+          .scheduleOwnBirthdayCountdown(ownDob);
+      await ref
+          .read(notificationGatewayProvider)
+          .scheduleNextDayMilestone(ownDob);
     }
   }
 

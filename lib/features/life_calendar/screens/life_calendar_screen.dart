@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../app/app_routes.dart';
+import '../../../core/analytics/analytics_event.dart';
+import '../../../core/analytics/app_analytics.dart';
+import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../shared/widgets/app_card.dart';
@@ -15,11 +18,27 @@ import '../providers/life_calendar_provider.dart';
 import '../utils/life_calendar_share_service.dart';
 import '../utils/life_calendar_utils.dart';
 
-class LifeCalendarScreen extends ConsumerWidget {
+class LifeCalendarScreen extends ConsumerStatefulWidget {
   const LifeCalendarScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LifeCalendarScreen> createState() => _LifeCalendarScreenState();
+}
+
+class _LifeCalendarScreenState extends ConsumerState<LifeCalendarScreen> {
+  @override
+  void initState() {
+    super.initState();
+    ref
+        .read(appAnalyticsProvider)
+        .logEventSafely(
+          AnalyticsEvent.lifeCalendarOpened,
+          parameters: const <String, Object>{'source': 'home'},
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final birthDate = ref.watch(
       ageCalculatorProvider.select((state) => state.birthDate),
     );

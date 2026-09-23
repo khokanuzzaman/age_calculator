@@ -1,8 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/theme_mode_notifier.dart';
-import '../../age_calculator/utils/age_calculation_utils.dart';
+import '../../../core/analytics/analytics_event.dart';
+import '../../../core/analytics/app_analytics.dart';
+import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/utils/date_utils.dart';
+import '../../age_calculator/utils/age_calculation_utils.dart';
 import '../data/saved_birthdays_repository.dart';
 import '../models/saved_person.dart';
 import 'reminders_provider.dart';
@@ -28,17 +31,37 @@ class SavedBirthdaysNotifier extends Notifier<List<SavedPerson>> {
   Future<void> addOrUpdate(SavedPerson person) async {
     final next = [...state];
     final index = next.indexWhere((p) => p.id == person.id);
+    final isUpdate = index >= 0;
     if (index >= 0) {
       next[index] = person;
     } else {
       next.add(person);
     }
     await _persist(_sorted(next));
+    ref
+        .read(appAnalyticsProvider)
+        .logEventSafely(
+          isUpdate
+              ? AnalyticsEvent.birthdayUpdated
+              : AnalyticsEvent.birthdaySaved,
+          parameters: isUpdate
+              ? const <String, Object>{}
+              : <String, Object>{
+                  'has_relation': person.relation?.trim().isNotEmpty == true,
+                },
+        );
   }
 
   Future<void> remove(String id) async {
+    final existed = state.any((person) => person.id == id);
+    if (!existed) {
+      return;
+    }
     final next = state.where((p) => p.id != id).toList(growable: false);
     await _persist(next);
+    ref
+        .read(appAnalyticsProvider)
+        .logEventSafely(AnalyticsEvent.birthdayDeleted);
   }
 
   Future<void> _persist(List<SavedPerson> people) async {

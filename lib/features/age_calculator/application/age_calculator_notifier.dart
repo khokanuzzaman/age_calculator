@@ -1,5 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/analytics/analytics_classification.dart';
+import '../../../core/analytics/analytics_event.dart';
+import '../../../core/analytics/app_analytics.dart';
+import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/utils/date_utils.dart';
 import '../domain/models/age_result.dart';
 
@@ -88,10 +92,19 @@ class AgeCalculatorNotifier extends Notifier<AgeCalculatorState> {
       return;
     }
 
-    state = state.copyWith(
-      result: AppDateUtils.calculateAge(birthDate, asOfDate),
-      errorMessage: null,
-    );
+    final result = AppDateUtils.calculateAge(birthDate, asOfDate);
+    state = state.copyWith(result: result, errorMessage: null);
+    ref
+        .read(appAnalyticsProvider)
+        .logEventSafely(
+          AnalyticsEvent.ageCalculated,
+          parameters: <String, Object>{
+            'source': 'age_calculator',
+            'is_custom_as_of_date':
+                asOfDate != AppDateUtils.dateOnly(DateTime.now()),
+            'result_age_group': AnalyticsClassification.ageGroup(result.years),
+          },
+        );
   }
 
   void reset() {

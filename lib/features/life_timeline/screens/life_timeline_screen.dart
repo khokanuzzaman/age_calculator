@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/analytics/analytics_event.dart';
+import '../../../core/analytics/app_analytics.dart';
+import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../shared/widgets/app_card.dart';
@@ -13,11 +16,27 @@ import '../utils/life_event_share_service.dart';
 import '../utils/life_event_utils.dart';
 import '../widgets/life_event_editor_sheet.dart';
 
-class LifeTimelineScreen extends ConsumerWidget {
+class LifeTimelineScreen extends ConsumerStatefulWidget {
   const LifeTimelineScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LifeTimelineScreen> createState() => _LifeTimelineScreenState();
+}
+
+class _LifeTimelineScreenState extends ConsumerState<LifeTimelineScreen> {
+  @override
+  void initState() {
+    super.initState();
+    ref
+        .read(appAnalyticsProvider)
+        .logEventSafely(
+          AnalyticsEvent.lifeTimelineOpened,
+          parameters: const <String, Object>{'source': 'home'},
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final events = ref.watch(lifeEventsProvider);
     final birthDate = ref.watch(
       ageCalculatorProvider.select((state) => state.birthDate),
@@ -106,6 +125,14 @@ class LifeTimelineScreen extends ConsumerWidget {
     final event = await showLifeEventEditor(context, birthDate: birthDate);
     if (event != null) {
       await ref.read(lifeEventsProvider.notifier).addOrUpdate(event);
+      ref
+          .read(appAnalyticsProvider)
+          .logEventSafely(
+            AnalyticsEvent.timelineEventAdded,
+            parameters: <String, Object>{
+              'reminder_enabled': event.reminderEnabled,
+            },
+          );
     }
   }
 
@@ -122,6 +149,14 @@ class LifeTimelineScreen extends ConsumerWidget {
     );
     if (updated != null) {
       await ref.read(lifeEventsProvider.notifier).addOrUpdate(updated);
+      ref
+          .read(appAnalyticsProvider)
+          .logEventSafely(
+            AnalyticsEvent.timelineEventUpdated,
+            parameters: <String, Object>{
+              'reminder_enabled': updated.reminderEnabled,
+            },
+          );
     }
   }
 
@@ -149,6 +184,9 @@ class LifeTimelineScreen extends ConsumerWidget {
     );
     if (shouldDelete == true) {
       await ref.read(lifeEventsProvider.notifier).remove(event.id);
+      ref
+          .read(appAnalyticsProvider)
+          .logEventSafely(AnalyticsEvent.timelineEventDeleted);
     }
   }
 }

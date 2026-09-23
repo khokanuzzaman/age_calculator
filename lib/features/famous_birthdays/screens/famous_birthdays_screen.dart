@@ -1,20 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/analytics/analytics_event.dart';
+import '../../../core/analytics/app_analytics.dart';
+import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/app_date_field.dart';
 import '../../../shared/widgets/app_screen_backdrop.dart';
 import '../provider/famous_birthday_provider.dart';
 import '../widgets/famous_birthdays_card.dart';
 
-class FamousBirthdaysScreen extends StatefulWidget {
-  const FamousBirthdaysScreen({super.key});
+class FamousBirthdaysScreen extends ConsumerStatefulWidget {
+  const FamousBirthdaysScreen({super.key, this.source = 'home'});
+
+  final String source;
 
   @override
-  State<FamousBirthdaysScreen> createState() => _FamousBirthdaysScreenState();
+  ConsumerState<FamousBirthdaysScreen> createState() =>
+      _FamousBirthdaysScreenState();
 }
 
-class _FamousBirthdaysScreenState extends State<FamousBirthdaysScreen> {
+class _FamousBirthdaysScreenState extends ConsumerState<FamousBirthdaysScreen> {
   DateTime _selectedDate = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    ref
+        .read(appAnalyticsProvider)
+        .logEventSafely(
+          AnalyticsEvent.famousBirthdaysOpened,
+          parameters: <String, Object>{'source': widget.source},
+        );
+  }
 
   @override
   Widget build(BuildContext context) {

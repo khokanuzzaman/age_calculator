@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/analytics/analytics_event.dart';
+import '../../../core/analytics/app_analytics.dart';
+import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/animated_result_card.dart';
 import '../models/age_milestone_model.dart';
@@ -8,7 +12,7 @@ import 'history_tab.dart';
 import 'milestones_tab.dart';
 import 'overview_tab.dart';
 
-class ResultTabs extends StatefulWidget {
+class ResultTabs extends ConsumerStatefulWidget {
   const ResultTabs({
     super.key,
     required this.monthDay,
@@ -25,10 +29,10 @@ class ResultTabs extends StatefulWidget {
   final List<AgeMilestone> milestones;
 
   @override
-  State<ResultTabs> createState() => _ResultTabsState();
+  ConsumerState<ResultTabs> createState() => _ResultTabsState();
 }
 
-class _ResultTabsState extends State<ResultTabs>
+class _ResultTabsState extends ConsumerState<ResultTabs>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   final Set<int> _visitedTabs = <int>{0};
@@ -40,10 +44,31 @@ class _ResultTabsState extends State<ResultTabs>
     _tabController = TabController(length: 4, vsync: this)
       ..addListener(() {
         if (_tabController.indexIsChanging) {
-          _visitedTabs.add(_tabController.index);
+          final index = _tabController.index;
+          final firstVisit = _visitedTabs.add(index);
+          if (firstVisit) {
+            _logFeatureOpened(index);
+          }
           setState(() {});
         }
       });
+  }
+
+  void _logFeatureOpened(int index) {
+    final event = switch (index) {
+      2 => AnalyticsEvent.famousBirthdaysOpened,
+      3 => AnalyticsEvent.onThisDayOpened,
+      _ => null,
+    };
+    if (event == null) {
+      return;
+    }
+    ref
+        .read(appAnalyticsProvider)
+        .logEventSafely(
+          event,
+          parameters: const <String, Object>{'source': 'age_result'},
+        );
   }
 
   @override

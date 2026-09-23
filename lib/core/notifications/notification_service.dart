@@ -7,13 +7,14 @@ import '../../features/age_calculator/utils/age_calculation_utils.dart';
 import '../../features/life_timeline/models/life_event.dart';
 import '../../features/saved_birthdays/models/saved_person.dart';
 import '../utils/date_utils.dart';
+import 'notification_gateway.dart';
 
 /// Schedules yearly local notifications for saved birthdays.
 ///
 /// Reminders fire at 9:00 AM on each person's birthday and repeat every year.
 /// Scheduling is inexact (so no exact-alarm permission is required) — exact
 /// timing is unnecessary for a birthday greeting.
-class NotificationService {
+class NotificationService implements NotificationGateway {
   NotificationService._();
 
   static final NotificationService instance = NotificationService._();
@@ -72,6 +73,7 @@ class NotificationService {
   }
 
   /// Requests notification permission. Returns true if granted (or not required).
+  @override
   Future<bool> requestPermission() async {
     await init();
     final android = _plugin
@@ -165,6 +167,7 @@ class NotificationService {
 
   /// Cancels all reminders then reschedules the given people. Used when
   /// reminders are toggled on or the list changes.
+  @override
   Future<void> rescheduleAll(
     List<SavedPerson> people, {
     List<LifeEvent> events = const [],
@@ -179,6 +182,7 @@ class NotificationService {
     }
   }
 
+  @override
   Future<void> cancelAll() async {
     await init();
     await _plugin.cancelAll();
@@ -189,6 +193,7 @@ class NotificationService {
   /// Schedules a small set of lead-time reminders (7 days / 1 day / on the day)
   /// before the user's next birthday. Uses fixed negative IDs and repeats
   /// yearly, so it stays scheduled without needing the app to be reopened.
+  @override
   Future<void> scheduleOwnBirthdayCountdown(DateTime birthDate) async {
     await init();
     // Clear previous leads first so a changed DOB doesn't leave stale dates.
@@ -226,6 +231,7 @@ class NotificationService {
 
   /// Schedules a one-time reminder for the user's next round-number
   /// "days lived" milestone (e.g. 10,000 days).
+  @override
   Future<void> scheduleNextDayMilestone(DateTime birthDate) async {
     await init();
     await _plugin.cancel(_milestoneId);
@@ -257,6 +263,7 @@ class NotificationService {
   }
 
   /// Cancels the user's own birthday-countdown and milestone reminders.
+  @override
   Future<void> cancelOwnReminders() async {
     await init();
     for (final d in _ownBirthdayLeadDays) {

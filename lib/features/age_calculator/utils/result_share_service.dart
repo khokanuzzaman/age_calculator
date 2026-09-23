@@ -11,13 +11,22 @@ import '../../age_calculator/domain/models/age_result.dart';
 import '../widgets/shareable_result_card.dart';
 import 'age_calculation_utils.dart';
 
+enum ResultShareFormat {
+  image('image'),
+  textFallback('text_fallback');
+
+  const ResultShareFormat(this.value);
+
+  final String value;
+}
+
 /// Captures the [ShareableResultCard] off screen and shares it as a PNG with a
 /// text caption. Falls back to plain-text sharing if image capture fails so the
 /// user can always share something.
 class ResultShareService {
   ResultShareService._();
 
-  static Future<void> shareResult({
+  static Future<ResultShareFormat> shareResult({
     required BuildContext context,
     required AgeResult result,
   }) async {
@@ -43,7 +52,7 @@ class ResultShareService {
 
     if (bytes == null) {
       await Share.share(caption, subject: AppStrings.appName);
-      return;
+      return ResultShareFormat.textFallback;
     }
 
     try {
@@ -55,8 +64,10 @@ class ResultShareService {
         text: caption,
         subject: AppStrings.appName,
       );
+      return ResultShareFormat.image;
     } catch (_) {
       await Share.share(caption, subject: AppStrings.appName);
+      return ResultShareFormat.textFallback;
     }
   }
 }
