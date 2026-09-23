@@ -9,6 +9,8 @@ class AppRoutes {
   static const String famousBirthdays = '/famous-birthdays';
   static const String onThisDay = '/on-this-day';
   static const String savedBirthdays = '/saved-birthdays';
+  static const String lifeTimeline = '/life-timeline';
+  static const String lifeCalendar = '/life-calendar';
   static const String settings = '/settings';
   static const String about = '/about';
 }

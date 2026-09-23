@@ -182,6 +182,24 @@ class HomeScreen extends ConsumerWidget {
                         ).pushNamed(AppRoutes.savedBirthdays),
                       ),
                       ToolMenuCard(
+                        accent: _ToolColors.timeline,
+                        title: 'Life Timeline',
+                        description: 'Age at important moments',
+                        icon: Icons.timeline_outlined,
+                        onTap: () => Navigator.of(
+                          context,
+                        ).pushNamed(AppRoutes.lifeTimeline),
+                      ),
+                      ToolMenuCard(
+                        accent: _ToolColors.calendar,
+                        title: 'Life Calendar',
+                        description: 'See your life in weeks',
+                        icon: Icons.grid_view_rounded,
+                        onTap: () => Navigator.of(
+                          context,
+                        ).pushNamed(AppRoutes.lifeCalendar),
+                      ),
+                      ToolMenuCard(
                         accent: _ToolColors.dateDiff,
                         title: 'Date Difference',
                         description: 'Gap between dates',
@@ -265,6 +283,8 @@ class _ToolColors {
 
   static const Color age = Color(0xFF0EA5E9); // sky
   static const Color saved = Color(0xFFEC4899); // pink
+  static const Color timeline = Color(0xFF06B6D4); // cyan
+  static const Color calendar = Color(0xFF8B5CF6); // violet
   static const Color dateDiff = Color(0xFF14B8A6); // teal
   static const Color ageDiff = Color(0xFF6366F1); // indigo
   static const Color leap = Color(0xFF22C55E); // green

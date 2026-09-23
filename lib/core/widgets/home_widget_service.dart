@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../app/theme/theme_mode_notifier.dart';
 import '../../features/age_calculator/utils/age_calculation_utils.dart';
+import '../../features/life_timeline/data/life_events_repository.dart';
+import '../../features/life_timeline/utils/life_event_utils.dart';
 import '../utils/date_utils.dart';
 
 /// Pushes the user's current age and birthday countdown to the native Android
@@ -22,6 +24,7 @@ class HomeWidgetService {
   static const _keyHasData = 'has_data';
   static const _keyAge = 'age_text';
   static const _keyCountdown = 'countdown_text';
+  static const _keyEvent = 'event_text';
 
   /// Persists the primary birth date and pushes fresh values to the widget.
   Future<void> setBirthDate(DateTime? birthDate, {DateTime? now}) async {
@@ -43,6 +46,10 @@ class HomeWidgetService {
 
   Future<void> _push(DateTime? dob, DateTime now) async {
     try {
+      final nextEvent = LifeEventUtils.nextUpcoming(
+        LifeEventsRepository(_prefs).load(),
+        now: now,
+      );
       if (dob == null) {
         await HomeWidget.saveWidgetData<bool>(_keyHasData, false);
         await HomeWidget.saveWidgetData<String>(_keyAge, 'Set your birthday');
@@ -60,6 +67,11 @@ class HomeWidgetService {
         await HomeWidget.saveWidgetData<String>(_keyAge, data.ageText);
         await HomeWidget.saveWidgetData<String>(_keyCountdown, countdown);
       }
+      final eventText = nextEvent == null
+          ? 'Add a moment to your Life Timeline'
+          : '${nextEvent.emoji} ${nextEvent.title} · '
+                '${LifeEventUtils.details(nextEvent, now: now).relativeText}';
+      await HomeWidget.saveWidgetData<String>(_keyEvent, eventText);
       await HomeWidget.updateWidget(androidName: _androidWidgetName);
     } catch (_) {
       // Best-effort: widget updates must never break the app (unsupported

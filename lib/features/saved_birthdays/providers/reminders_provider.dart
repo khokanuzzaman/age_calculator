@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/theme_mode_notifier.dart';
 import '../../../core/notifications/notification_service.dart';
+import '../../life_timeline/providers/life_events_provider.dart';
 import 'saved_birthdays_provider.dart';
 
 /// Whether the user has enabled yearly birthday reminders.
@@ -52,6 +53,18 @@ class RemindersEnabledNotifier extends Notifier<bool> {
     await _rescheduleEverything();
   }
 
+  /// Re-syncs all reminders after a life event changes.
+  Future<void> syncFromLifeEvents() async {
+    if (!state) {
+      return;
+    }
+    try {
+      await _rescheduleEverything();
+    } catch (_) {
+      // Reminder sync is best-effort; never block a life event save on it.
+    }
+  }
+
   /// Persists the user's own primary birth date and, when reminders are on,
   /// (re)schedules their birthday countdown and next day-milestone. Called
   /// whenever the primary birth date is set or changed. Gated by the reminders
@@ -71,7 +84,9 @@ class RemindersEnabledNotifier extends Notifier<bool> {
     if (birthDate == null) {
       await NotificationService.instance.cancelOwnReminders();
     } else {
-      await NotificationService.instance.scheduleOwnBirthdayCountdown(birthDate);
+      await NotificationService.instance.scheduleOwnBirthdayCountdown(
+        birthDate,
+      );
       await NotificationService.instance.scheduleNextDayMilestone(birthDate);
     }
   }
@@ -81,6 +96,7 @@ class RemindersEnabledNotifier extends Notifier<bool> {
   Future<void> _rescheduleEverything() async {
     await NotificationService.instance.rescheduleAll(
       ref.read(savedBirthdaysProvider),
+      events: ref.read(lifeEventsProvider),
     );
     final ownDob = _readOwnBirthDate();
     if (ownDob != null) {

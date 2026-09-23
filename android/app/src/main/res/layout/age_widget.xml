@@ -35,4 +35,15 @@
         android:text="120 days to birthday"
         android:textColor="#38BDF8"
         android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/widget_event"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="Add a moment to your Life Timeline"
+        android:textColor="#B9C2D0"
+        android:textSize="11sp" />
 </LinearLayout>

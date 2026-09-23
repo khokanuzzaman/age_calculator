@@ -14,6 +14,9 @@ import '../features/date_difference/screens/date_difference_screen.dart';
 import '../features/famous_birthdays/screens/famous_birthdays_screen.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/leap_year/screens/leap_year_screen.dart';
+import '../features/life_timeline/providers/life_events_provider.dart';
+import '../features/life_timeline/screens/life_timeline_screen.dart';
+import '../features/life_calendar/screens/life_calendar_screen.dart';
 import '../features/on_this_day/screens/on_this_day_screen.dart';
 import '../features/saved_birthdays/providers/reminders_provider.dart';
 import '../features/saved_birthdays/screens/saved_birthdays_screen.dart';
@@ -69,6 +72,12 @@ class _AgeCalculatorAppState extends ConsumerState<AgeCalculatorApp> {
         ref.read(homeWidgetServiceProvider).setBirthDate(next.birthDate);
       }
     });
+    ref.listen(lifeEventsProvider, (previous, next) {
+      if (previous != next) {
+        ref.read(remindersEnabledProvider.notifier).syncFromLifeEvents();
+        ref.read(homeWidgetServiceProvider).refresh();
+      }
+    });
 
     return MaterialApp(
       title: AppStrings.appName,
@@ -87,6 +96,8 @@ class _AgeCalculatorAppState extends ConsumerState<AgeCalculatorApp> {
         AppRoutes.famousBirthdays: (_) => const FamousBirthdaysScreen(),
         AppRoutes.onThisDay: (_) => const OnThisDayScreen(),
         AppRoutes.savedBirthdays: (_) => const SavedBirthdaysScreen(),
+        AppRoutes.lifeTimeline: (_) => const LifeTimelineScreen(),
+        AppRoutes.lifeCalendar: (_) => const LifeCalendarScreen(),
         AppRoutes.settings: (_) => const SettingsScreen(),
         AppRoutes.about: (_) => const AboutScreen(),
       },

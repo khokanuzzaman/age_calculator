@@ -31,8 +31,7 @@ class AdsConfig {
       'ca-app-pub-3940256099942544/1033173712';
   static const String _testAppOpenAndroid =
       'ca-app-pub-3940256099942544/9257395921';
-  static const String _testBannerIOS =
-      'ca-app-pub-3940256099942544/2934735716';
+  static const String _testBannerIOS = 'ca-app-pub-3940256099942544/2934735716';
   static const String _testInterstitialIOS =
       'ca-app-pub-3940256099942544/4411468910';
   static const String _testAppOpenIOS =
@@ -44,21 +43,64 @@ class AdsConfig {
       'ca-app-pub-1928074644821911/5243694175';
   static const String _prodInterstitialAndroid =
       'ca-app-pub-1928074644821911/5813550139';
-  // TODO(owner): create an App Open ad unit in AdMob for me.khokan.agecalculator
-  // and paste its real unit ID here (falls back to the TEST unit until then).
-  static const String _prodAppOpenAndroid = 'YOUR_REAL_APP_OPEN_AD_UNIT_ID';
+  static const String _prodAppOpenAndroid =
+      'ca-app-pub-1928074644821911/2754551573';
 
   // Real ad unit IDs for the separate iOS AdMob app entry (App ID:
   // ca-app-pub-1928074644821911~7649605868, set in ios/Runner/Info.plist).
-  static const String _prodBannerIOS =
-      'ca-app-pub-1928074644821911/8350645141';
+  static const String _prodBannerIOS = 'ca-app-pub-1928074644821911/8350645141';
   static const String _prodInterstitialIOS =
       'ca-app-pub-1928074644821911/5072961298';
   static const String _prodAppOpenIOS =
       'ca-app-pub-1928074644821911/1032226622';
 
+  static bool _isValidAdUnitId(String value) =>
+      RegExp(r'^ca-app-pub-\d{16}/\d{10}$').hasMatch(value);
+
+  static String? get _productionAppOpenAdUnitId {
+    if (Platform.isAndroid) {
+      return _prodAppOpenAndroid;
+    }
+    if (Platform.isIOS) {
+      return _prodAppOpenIOS;
+    }
+    return null;
+  }
+
+  /// Whether a production App Open ad unit is safe to send to AdMob.
+  ///
+  /// Test mode is considered configured because the official Google test unit
+  /// is intentionally selected in that mode. Production values must match a
+  /// real AdMob unit ID shape; placeholders and empty values are rejected.
+  static bool get isAppOpenAdConfigured {
+    return appOpenAdUnitIdOrNull != null;
+  }
+
+  /// Returns the App Open unit ID only when it is safe to use.
+  static String? get appOpenAdUnitIdOrNull {
+    if (useTestAds) {
+      if (Platform.isAndroid) {
+        return _testAppOpenAndroid;
+      }
+      if (Platform.isIOS) {
+        return _testAppOpenIOS;
+      }
+      return null;
+    }
+    final id = _productionAppOpenAdUnitId;
+    if (id == null || !_isValidAdUnitId(id)) {
+      return null;
+    }
+    return id;
+  }
+
+  /// Exposed for pure configuration tests without loading the Ads SDK.
+  static bool isValidAdUnitId(String value) => _isValidAdUnitId(value);
+
   static bool get _iosProdIdsConfigured =>
-      !_prodBannerIOS.startsWith('YOUR_REAL_');
+      _isValidAdUnitId(_prodBannerIOS) &&
+      _isValidAdUnitId(_prodInterstitialIOS) &&
+      _isValidAdUnitId(_prodAppOpenIOS);
 
   static String get bannerAdUnitId {
     if (useTestAds) {
@@ -83,13 +125,7 @@ class AdsConfig {
   }
 
   static String get appOpenAdUnitId {
-    if (useTestAds) {
-      return Platform.isAndroid ? _testAppOpenAndroid : _testAppOpenIOS;
-    }
-    if (Platform.isAndroid) {
-      return _prodAppOpenAndroid;
-    }
-    return _iosProdIdsConfigured ? _prodAppOpenIOS : _testAppOpenIOS;
+    return appOpenAdUnitIdOrNull ?? '';
   }
 
   /// Show an interstitial at most once every [interstitialEveryNActions]

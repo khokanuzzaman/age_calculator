@@ -59,8 +59,7 @@ Future<void> _initAds() async {
     await ConsentService.instance.requestConsentIfNeeded();
 
     if (Platform.isIOS) {
-      final status =
-          await AppTrackingTransparency.trackingAuthorizationStatus;
+      final status = await AppTrackingTransparency.trackingAuthorizationStatus;
       if (status == TrackingStatus.notDetermined) {
         // Give the just-launched UI a moment to settle before the system
         // prompt appears, per Apple's guidance.
@@ -81,7 +80,9 @@ Future<void> _initAds() async {
     }
     await MobileAds.instance.initialize();
     InterstitialAdManager.instance.preload();
-    AppOpenAdManager.instance.load();
+    if (AdsConfig.isAppOpenAdConfigured) {
+      AppOpenAdManager.instance.load();
+    }
   } catch (_) {
     // Ads are non-critical; never block app startup on them.
   }

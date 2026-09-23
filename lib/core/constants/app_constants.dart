@@ -33,9 +33,8 @@ class AppStrings {
   AppStrings._();
 
   static const String appName = 'Age Calculator';
-  static const String appVersion = '1.1.1';
   static const String appDescription =
-      'Calculate exact age, date differences, leap years, and upcoming birthdays with simple offline date math.';
+      'Calculate exact age, date differences, leap years, birthdays, and life moments with simple offline date math.';
   static const String developerName = 'Md Khokanuzzaman Khokan';
   static const String brandName = 'Troubleshoot Bangla';
   static const String portfolioUrl = 'https://khokan.me';

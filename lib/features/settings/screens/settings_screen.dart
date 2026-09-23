@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/theme/theme_mode_notifier.dart';
+import '../../../core/app_info/app_info_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_screen_backdrop.dart';
@@ -16,6 +17,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     final remindersEnabled = ref.watch(remindersEnabledProvider);
+    final version = displayAppVersion(ref.watch(appVersionProvider));
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -70,14 +72,16 @@ class SettingsScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text('Birthdays', style: textTheme.titleMedium),
+                        Text('Reminders', style: textTheme.titleMedium),
                         const SizedBox(height: AppSpacing.sm),
                         SwitchListTile(
                           contentPadding: EdgeInsets.zero,
-                          secondary: const Icon(Icons.notifications_active_outlined),
-                          title: const Text('Birthday reminders'),
+                          secondary: const Icon(
+                            Icons.notifications_active_outlined,
+                          ),
+                          title: const Text('Birthday and event reminders'),
                           subtitle: const Text(
-                            'Get a yearly reminder for saved birthdays',
+                            'Get local reminders for birthdays and life events',
                           ),
                           value: remindersEnabled,
                           onChanged: (value) async {
@@ -110,10 +114,7 @@ class SettingsScreen extends ConsumerWidget {
                       children: [
                         Text('App info', style: textTheme.titleMedium),
                         const SizedBox(height: AppSpacing.sm),
-                        const _InfoRow(
-                          label: 'Version',
-                          value: AppStrings.appVersion,
-                        ),
+                        _InfoRow(label: 'Version', value: version),
                         const SizedBox(height: AppSpacing.md),
                         _LinkRow(
                           label: 'Privacy Policy',

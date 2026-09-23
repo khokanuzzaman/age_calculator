@@ -12,6 +12,7 @@ void main() {
     final manager = AppOpenAdManager.forTest(
       now: () => clock,
       interstitialIsShowing: () => interstitialShowing,
+      appOpenAdConfigured: () => true,
     );
     // Simulate a loaded ad and capture "show" without hitting the SDK.
     manager
@@ -43,6 +44,17 @@ void main() {
     expect(manager.showIfAvailable(adsEnabled: false), isFalse);
     expect(presentCount, 0);
     expect(manager.isShowing, isFalse);
+  });
+
+  test('no-op when the App Open ad unit is not configured', () {
+    final manager = AppOpenAdManager.forTest(
+      now: () => clock,
+      interstitialIsShowing: () => interstitialShowing,
+      appOpenAdConfigured: () => false,
+    )..debugSetAdAvailable(true);
+
+    expect(manager.showIfAvailable(adsEnabled: true), isFalse);
+    expect(presentCount, 0);
   });
 
   test('no-op when no ad is loaded', () {

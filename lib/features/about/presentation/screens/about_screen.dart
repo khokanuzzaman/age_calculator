@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/app_info/app_info_provider.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../shared/widgets/app_card.dart';
 import '../../../../shared/widgets/app_screen_backdrop.dart';
 
-class AboutScreen extends StatelessWidget {
+class AboutScreen extends ConsumerWidget {
   const AboutScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
+    final version = displayAppVersion(ref.watch(appVersionProvider));
 
     return Scaffold(
       appBar: AppBar(title: const Text('About')),
@@ -62,7 +65,7 @@ class AboutScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: AppSpacing.xs),
                             Text(
-                              'Version ${AppStrings.appVersion}',
+                              'Version $version',
                               style: textTheme.bodyMedium?.copyWith(
                                 color: scheme.onSurfaceVariant,
                               ),

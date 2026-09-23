@@ -4,6 +4,7 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../features/age_calculator/utils/age_calculation_utils.dart';
+import '../../features/life_timeline/models/life_event.dart';
 import '../../features/saved_birthdays/models/saved_person.dart';
 import '../utils/date_utils.dart';
 
@@ -40,6 +41,7 @@ class NotificationService {
   // collide with them.
   static const _ownBirthdayBaseId = -1000; // lead id = base - daysBefore
   static const _milestoneId = -2000;
+  static const _lifeEventBaseId = -1000000000;
   static const _ownBirthdayLeadDays = [7, 1, 0];
 
   Future<void> init() async {
@@ -93,6 +95,10 @@ class NotificationService {
 
   int _notificationId(String personId) => personId.hashCode & 0x7fffffff;
 
+  int _lifeEventNotificationId(String eventId) {
+    return _lifeEventBaseId - (eventId.hashCode & 0x0fffffff);
+  }
+
   Future<void> scheduleBirthday(SavedPerson person) async {
     await init();
     final scheduled = _nextBirthdayAt9am(person.birthDate);
@@ -124,13 +130,52 @@ class NotificationService {
     await _plugin.cancel(_notificationId(personId));
   }
 
+  Future<void> scheduleLifeEvent(LifeEvent event) async {
+    await init();
+    if (!event.reminderEnabled) {
+      return;
+    }
+
+    final now = tz.TZDateTime.now(tz.local);
+    final scheduled = _at9am(event.eventDate);
+    if (!scheduled.isAfter(now)) {
+      return;
+    }
+
+    await _plugin.zonedSchedule(
+      _lifeEventNotificationId(event.id),
+      '${event.emoji} ${event.title}',
+      'Your life event is today.',
+      scheduled,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          _personalChannelId,
+          _personalChannelName,
+          channelDescription: _personalChannelDescription,
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+    );
+  }
+
   /// Cancels all reminders then reschedules the given people. Used when
   /// reminders are toggled on or the list changes.
-  Future<void> rescheduleAll(List<SavedPerson> people) async {
+  Future<void> rescheduleAll(
+    List<SavedPerson> people, {
+    List<LifeEvent> events = const [],
+  }) async {
     await init();
     await _plugin.cancelAll();
     for (final person in people) {
       await scheduleBirthday(person);
+    }
+    for (final event in events) {
+      await scheduleLifeEvent(event);
     }
   }
 
@@ -232,7 +277,13 @@ class NotificationService {
   );
 
   tz.TZDateTime _at9am(DateTime date) {
-    return tz.TZDateTime(tz.local, date.year, date.month, date.day, _reminderHour);
+    return tz.TZDateTime(
+      tz.local,
+      date.year,
+      date.month,
+      date.day,
+      _reminderHour,
+    );
   }
 
   tz.TZDateTime _nextBirthdayAt9am(DateTime birthDate) {

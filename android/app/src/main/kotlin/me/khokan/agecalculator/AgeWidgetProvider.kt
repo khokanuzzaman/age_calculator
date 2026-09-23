@@ -25,9 +25,12 @@ class AgeWidgetProvider : HomeWidgetProvider() {
             val ageText = widgetData.getString("age_text", null) ?: "Set your birthday"
             val countdownText =
                 widgetData.getString("countdown_text", null) ?: "Tap to open Age Calculator"
+            val eventText =
+                widgetData.getString("event_text", null) ?: "Add a moment to your Life Timeline"
 
             views.setTextViewText(R.id.widget_age, ageText)
             views.setTextViewText(R.id.widget_countdown, countdownText)
+            views.setTextViewText(R.id.widget_event, eventText)
 
             // Tapping anywhere on the widget opens the app.
             val pendingIntent =

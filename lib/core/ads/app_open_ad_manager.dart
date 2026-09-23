@@ -15,10 +15,13 @@ class AppOpenAdManager {
   AppOpenAdManager._({
     DateTime Function()? now,
     bool Function()? interstitialIsShowing,
+    bool Function()? appOpenAdConfigured,
   }) : _now = now ?? DateTime.now,
        _interstitialIsShowing =
            interstitialIsShowing ??
-           (() => InterstitialAdManager.instance.isShowing);
+           (() => InterstitialAdManager.instance.isShowing),
+       _appOpenAdConfigured =
+           appOpenAdConfigured ?? (() => AdsConfig.isAppOpenAdConfigured);
 
   static final AppOpenAdManager instance = AppOpenAdManager._();
 
@@ -28,10 +31,16 @@ class AppOpenAdManager {
   factory AppOpenAdManager.forTest({
     DateTime Function()? now,
     bool Function()? interstitialIsShowing,
-  }) => AppOpenAdManager._(now: now, interstitialIsShowing: interstitialIsShowing);
+    bool Function()? appOpenAdConfigured,
+  }) => AppOpenAdManager._(
+    now: now,
+    interstitialIsShowing: interstitialIsShowing,
+    appOpenAdConfigured: appOpenAdConfigured,
+  );
 
   final DateTime Function() _now;
   final bool Function() _interstitialIsShowing;
+  final bool Function() _appOpenAdConfigured;
 
   AppOpenAd? _ad;
   bool _isLoadingAd = false;
@@ -47,12 +56,13 @@ class AppOpenAdManager {
   bool get isShowing => _isShowingAd;
 
   void load() {
-    if (_isLoadingAd || _isAdAvailable) {
+    final adUnitId = AdsConfig.appOpenAdUnitIdOrNull;
+    if (adUnitId == null || _isLoadingAd || _isAdAvailable) {
       return;
     }
     _isLoadingAd = true;
     AppOpenAd.load(
-      adUnitId: AdsConfig.appOpenAdUnitId,
+      adUnitId: adUnitId,
       request: const AdRequest(),
       adLoadCallback: AppOpenAdLoadCallback(
         onAdLoaded: (ad) {
@@ -91,6 +101,9 @@ class AppOpenAdManager {
 
   bool _canShow({required bool adsEnabled}) {
     if (!adsEnabled) {
+      return false;
+    }
+    if (!_appOpenAdConfigured()) {
       return false;
     }
     if (!_isAdAvailable) {
