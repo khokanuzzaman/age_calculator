@@ -1,7 +1,7 @@
 import 'package:age_calculator/app/app.dart';
 import 'package:age_calculator/app/theme/theme_mode_notifier.dart';
 import 'package:age_calculator/core/app_info/app_info_provider.dart';
-import 'package:age_calculator/features/age_calculator/application/age_calculator_notifier.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -45,6 +45,7 @@ void main() {
     expect(find.text('Date Difference'), findsOneWidget);
     expect(find.text('Life Timeline'), findsOneWidget);
     expect(find.text('Life Calendar'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Settings'), 400);
     expect(find.text('Settings'), findsOneWidget);
   });
 
@@ -53,6 +54,8 @@ void main() {
   ) async {
     await pumpApp(tester);
 
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -300));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Life Timeline'));
     await tester.pumpAndSettle();
 
@@ -65,29 +68,27 @@ void main() {
   ) async {
     await pumpApp(tester);
 
-    await tester.tap(find.text('Life Calendar'));
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -400));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Life Calendar').last);
     await tester.pumpAndSettle();
 
     expect(find.text('Set your birthday first'), findsOneWidget);
-    expect(find.text('Calculate your age'), findsOneWidget);
+    expect(find.text('Set My Birthday'), findsOneWidget);
   });
 
   testWidgets('renders the life calendar grid after a birthday is set', (
     WidgetTester tester,
   ) async {
-    final container = await createContainer();
-    container
-        .read(ageCalculatorProvider.notifier)
-        .setBirthDate(DateTime(1990, 1, 1));
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: const AgeCalculatorApp(),
-      ),
+    await pumpApp(
+      tester,
+      preferences: {
+        'primary_birth_date_ms': DateTime(1990, 1, 1).millisecondsSinceEpoch,
+      },
     );
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -400));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Life Calendar'));
+    await tester.tap(find.text('Life Calendar').last);
     await tester.pumpAndSettle();
 
     expect(find.text('Your life in weeks'), findsOneWidget);
@@ -118,6 +119,8 @@ void main() {
   ) async {
     await pumpApp(tester);
 
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -400));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Date Difference'));
     await tester.pumpAndSettle();
 

@@ -6,6 +6,7 @@ import '../../app/theme/theme_mode_notifier.dart';
 import '../../features/age_calculator/utils/age_calculation_utils.dart';
 import '../../features/life_timeline/data/life_events_repository.dart';
 import '../../features/life_timeline/utils/life_event_utils.dart';
+import '../../features/profile/data/primary_profile_repository.dart';
 import '../utils/date_utils.dart';
 
 /// Pushes the user's current age and birthday countdown to the native Android
@@ -19,28 +20,21 @@ class HomeWidgetService {
 
   final SharedPreferences _prefs;
 
-  static const _dobKey = 'primary_birth_date_ms';
   static const _androidWidgetName = 'AgeWidgetProvider';
   static const _keyHasData = 'has_data';
   static const _keyAge = 'age_text';
   static const _keyCountdown = 'countdown_text';
   static const _keyEvent = 'event_text';
 
-  /// Persists the primary birth date and pushes fresh values to the widget.
+  /// Refreshes the widget from the primary profile repository.
   Future<void> setBirthDate(DateTime? birthDate, {DateTime? now}) async {
-    if (birthDate == null) {
-      await _prefs.remove(_dobKey);
-    } else {
-      await _prefs.setInt(_dobKey, birthDate.millisecondsSinceEpoch);
-    }
     await _push(birthDate, now ?? DateTime.now());
   }
 
   /// Re-reads the stored birth date and re-pushes — call at launch so the age
   /// and countdown stay current each day.
   Future<void> refresh({DateTime? now}) async {
-    final ms = _prefs.getInt(_dobKey);
-    final dob = ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+    final dob = PrimaryProfileRepository(_prefs).load()?.birthDate;
     await _push(dob, now ?? DateTime.now());
   }
 

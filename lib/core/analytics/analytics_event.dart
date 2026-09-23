@@ -20,7 +20,12 @@ enum AnalyticsEvent {
   lifeTimelineOpened('life_timeline_opened'),
   timelineEventAdded('timeline_event_added'),
   timelineEventUpdated('timeline_event_updated'),
-  timelineEventDeleted('timeline_event_deleted');
+  timelineEventDeleted('timeline_event_deleted'),
+  primaryProfileSaved('primary_profile_saved'),
+  primaryProfileUpdated('primary_profile_updated'),
+  primaryProfileCleared('primary_profile_cleared'),
+  todayDashboardViewed('today_dashboard_viewed'),
+  todayDashboardAction('today_dashboard_action');
 
   const AnalyticsEvent(this.name);
 

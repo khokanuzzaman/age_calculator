@@ -11,8 +11,8 @@ import '../../../core/utils/date_utils.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_primary_button.dart';
 import '../../../shared/widgets/app_screen_backdrop.dart';
-import '../../age_calculator/application/age_calculator_notifier.dart';
 import '../../life_timeline/providers/life_events_provider.dart';
+import '../../profile/providers/primary_profile_provider.dart';
 import '../models/life_calendar_model.dart';
 import '../providers/life_calendar_provider.dart';
 import '../utils/life_calendar_share_service.dart';
@@ -40,7 +40,7 @@ class _LifeCalendarScreenState extends ConsumerState<LifeCalendarScreen> {
   @override
   Widget build(BuildContext context) {
     final birthDate = ref.watch(
-      ageCalculatorProvider.select((state) => state.birthDate),
+      primaryProfileProvider.select((profile) => profile?.birthDate),
     );
     final horizon = ref.watch(lifeCalendarHorizonProvider);
     final events = ref.watch(lifeEventsProvider);
@@ -368,11 +368,10 @@ class _MissingBirthdayScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   AppPrimaryButton(
-                    label: 'Calculate your age',
+                    label: 'Set My Birthday',
                     icon: Icons.cake_outlined,
-                    onPressed: () => Navigator.of(
-                      context,
-                    ).pushNamed(AppRoutes.ageCalculator),
+                    onPressed: () =>
+                        Navigator.of(context).pushNamed(AppRoutes.profile),
                   ),
                 ],
               ),

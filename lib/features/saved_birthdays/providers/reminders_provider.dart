@@ -6,6 +6,7 @@ import '../../../core/analytics/app_analytics.dart';
 import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/notifications/notification_gateway_provider.dart';
 import '../../life_timeline/providers/life_events_provider.dart';
+import '../../profile/providers/primary_profile_provider.dart';
 import 'saved_birthdays_provider.dart';
 
 /// Whether the user has enabled yearly birthday reminders.
@@ -16,8 +17,6 @@ final remindersEnabledProvider =
 
 class RemindersEnabledNotifier extends Notifier<bool> {
   static const _key = 'birthday_reminders_enabled';
-  static const _ownDobKey = 'primary_birth_date_ms';
-
   @override
   bool build() {
     return ref.read(sharedPreferencesProvider).getBool(_key) ?? false;
@@ -90,18 +89,10 @@ class RemindersEnabledNotifier extends Notifier<bool> {
     }
   }
 
-  /// Persists the user's own primary birth date and, when reminders are on,
-  /// (re)schedules their birthday countdown and next day-milestone. Called
-  /// whenever the primary birth date is set or changed. Gated by the reminders
-  /// toggle — a no-op when reminders are off.
+  /// Synchronizes the user's own reminders with the primary profile. The
+  /// profile repository owns persistence; this method only schedules or
+  /// cancels notification IDs.
   Future<void> setOwnBirthDate(DateTime? birthDate) async {
-    final prefs = ref.read(sharedPreferencesProvider);
-    if (birthDate == null) {
-      await prefs.remove(_ownDobKey);
-    } else {
-      await prefs.setInt(_ownDobKey, birthDate.millisecondsSinceEpoch);
-    }
-
     if (!state) {
       return;
     }
@@ -139,7 +130,6 @@ class RemindersEnabledNotifier extends Notifier<bool> {
   }
 
   DateTime? _readOwnBirthDate() {
-    final ms = ref.read(sharedPreferencesProvider).getInt(_ownDobKey);
-    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+    return ref.read(primaryProfileRepositoryProvider).load()?.birthDate;
   }
 }

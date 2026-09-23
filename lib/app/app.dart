@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,6 +23,9 @@ import '../features/life_timeline/providers/life_events_provider.dart';
 import '../features/life_timeline/screens/life_timeline_screen.dart';
 import '../features/life_calendar/screens/life_calendar_screen.dart';
 import '../features/on_this_day/screens/on_this_day_screen.dart';
+import '../features/profile/models/primary_profile.dart';
+import '../features/profile/providers/primary_profile_provider.dart';
+import '../features/profile/screens/profile_screen.dart';
 import '../features/saved_birthdays/providers/reminders_provider.dart';
 import '../features/saved_birthdays/screens/saved_birthdays_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
@@ -37,6 +42,7 @@ class AgeCalculatorApp extends ConsumerStatefulWidget {
 
 class _AgeCalculatorAppState extends ConsumerState<AgeCalculatorApp> {
   late final AppLifecycleListener _lifecycleListener;
+  bool _hasSyncedInitialProfile = false;
 
   @override
   void initState() {
@@ -64,18 +70,19 @@ class _AgeCalculatorAppState extends ConsumerState<AgeCalculatorApp> {
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
 
-    // Whenever the primary birth date is set/changed, (re)schedule the user's
-    // own birthday countdown + day-milestone reminders. Gated behind the
-    // reminders toggle inside the notifier.
-    ref.listen<AgeCalculatorState>(ageCalculatorProvider, (previous, next) {
-      if (previous?.birthDate != next.birthDate) {
-        ref
-            .read(remindersEnabledProvider.notifier)
-            .setOwnBirthDate(next.birthDate);
-        // Keep the home-screen widget in sync with the primary birth date.
-        ref.read(homeWidgetServiceProvider).setBirthDate(next.birthDate);
-      }
+    // The profile is the only product-level source of truth for the user's
+    // birthday. Calculator edits remain temporary and never reach this sync.
+    ref.listen<PrimaryProfile?>(primaryProfileProvider, (previous, next) {
+      _syncPrimaryProfile(next);
     });
+    if (!_hasSyncedInitialProfile) {
+      _hasSyncedInitialProfile = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _syncPrimaryProfile(ref.read(primaryProfileProvider));
+        }
+      });
+    }
     ref.listen(lifeEventsProvider, (previous, next) {
       if (previous != next) {
         ref.read(remindersEnabledProvider.notifier).syncFromLifeEvents();
@@ -102,9 +109,26 @@ class _AgeCalculatorAppState extends ConsumerState<AgeCalculatorApp> {
         AppRoutes.savedBirthdays: (_) => const SavedBirthdaysScreen(),
         AppRoutes.lifeTimeline: (_) => const LifeTimelineScreen(),
         AppRoutes.lifeCalendar: (_) => const LifeCalendarScreen(),
+        AppRoutes.profile: (_) => const ProfileScreen(),
         AppRoutes.settings: (_) => const SettingsScreen(),
         AppRoutes.about: (_) => const AboutScreen(),
       },
     );
+  }
+
+  void _syncPrimaryProfile(PrimaryProfile? profile) {
+    final birthDate = profile?.birthDate;
+    if (birthDate == null) {
+      ref.read(ageCalculatorProvider.notifier).reset();
+    } else {
+      ref.read(ageCalculatorProvider.notifier).setBirthDate(birthDate);
+    }
+    unawaited(
+      ref
+          .read(remindersEnabledProvider.notifier)
+          .setOwnBirthDate(birthDate)
+          .catchError((_) {}),
+    );
+    unawaited(ref.read(homeWidgetServiceProvider).refresh().catchError((_) {}));
   }
 }

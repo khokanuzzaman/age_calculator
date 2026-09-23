@@ -43,6 +43,20 @@ void main() {
       ),
       hasLength(1),
     );
+    expect(
+      analytics.events.where(
+        (record) => record.event == AnalyticsEvent.todayDashboardViewed,
+      ),
+      hasLength(1),
+    );
+    expect(
+      analytics.events
+          .singleWhere(
+            (record) => record.event == AnalyticsEvent.todayDashboardViewed,
+          )
+          .parameters,
+      isEmpty,
+    );
   });
 
   test('age groups use the documented anonymous boundaries', () {

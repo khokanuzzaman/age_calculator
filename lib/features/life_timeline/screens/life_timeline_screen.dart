@@ -9,7 +9,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_screen_backdrop.dart';
-import '../../age_calculator/application/age_calculator_notifier.dart';
+import '../../profile/providers/primary_profile_provider.dart';
 import '../models/life_event.dart';
 import '../providers/life_events_provider.dart';
 import '../utils/life_event_share_service.dart';
@@ -39,7 +39,7 @@ class _LifeTimelineScreenState extends ConsumerState<LifeTimelineScreen> {
   Widget build(BuildContext context) {
     final events = ref.watch(lifeEventsProvider);
     final birthDate = ref.watch(
-      ageCalculatorProvider.select((state) => state.birthDate),
+      primaryProfileProvider.select((profile) => profile?.birthDate),
     );
     final today = AppDateUtils.dateOnly(DateTime.now());
     final upcoming = events
