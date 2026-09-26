@@ -13,6 +13,7 @@ import '../../../core/sharing/share_engine.dart';
 import '../../../core/sharing/share_payload.dart';
 import '../../../core/sharing/share_result.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_entrance.dart';
 import '../../../shared/widgets/app_primary_button.dart';
 import '../../../shared/widgets/app_screen_backdrop.dart';
 import '../../age_difference/utils/age_difference_utils.dart';
@@ -94,7 +95,19 @@ class _PersonDetailBody extends ConsumerWidget {
             onPressed: () => ref
                 .read(savedBirthdaysProvider.notifier)
                 .toggleFavorite(person.id),
-            icon: Icon(person.isFavorite ? Icons.star : Icons.star_outline),
+            icon: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 150),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: ScaleTransition(scale: animation, child: child),
+              ),
+              child: Icon(
+                person.isFavorite ? Icons.star : Icons.star_outline,
+                key: ValueKey<bool>(person.isFavorite),
+              ),
+            ),
           ),
         ],
       ),
@@ -105,110 +118,167 @@ class _PersonDetailBody extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.base),
               children: [
-                AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(person.emoji, style: const TextStyle(fontSize: 48)),
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        person.name,
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                      if (person.relation != null) ...[
+                AppEntrance(
+                  child: AppCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Hero(
+                          tag: 'person-avatar:${person.id}',
+                          child: Material(
+                            color: Colors.transparent,
+                            child: CircleAvatar(
+                              radius: 42,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.primaryContainer,
+                              child: Text(
+                                person.emoji,
+                                style: const TextStyle(fontSize: 36),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          person.name,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        if (person.relation != null) ...[
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            person.relation!,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                          ),
+                        ],
+                        const SizedBox(height: AppSpacing.lg),
+                        Text(
+                          countdown,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
                         const SizedBox(height: AppSpacing.xs),
-                        Text(person.relation!),
+                        Text(
+                          '${details.nextBirthdayWeekday}, ${DateFormat('d MMMM yyyy').format(details.nextBirthdayDate)}',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          '$age years old',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          'Born ${DateFormat('d MMMM yyyy').format(person.birthDate)}',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
                       ],
-                      const SizedBox(height: AppSpacing.md),
-                      Text(
-                        '$age years old',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(countdown),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        '${details.nextBirthdayWeekday}, ${DateFormat('d MMMM yyyy').format(details.nextBirthdayDate)}',
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        'Born ${DateFormat('d MMMM yyyy').format(person.birthDate)}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Birthday details',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      _InfoLine(label: 'Next birthday', value: countdown),
-                      _InfoLine(
-                        label: 'Weekday',
-                        value: details.nextBirthdayWeekday,
-                      ),
-                      _InfoLine(
-                        label: 'Western zodiac',
-                        value: ZodiacUtils.fromBirthDate(
-                          person.birthDate,
-                        ).westernSign,
-                      ),
-                      if (difference != null) ...[
+                AppEntrance(
+                  delay: const Duration(milliseconds: 55),
+                  child: AppCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Birthday details',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
                         const SizedBox(height: AppSpacing.sm),
-                        Text(
-                          'Age difference with you',
-                          style: Theme.of(context).textTheme.titleSmall,
+                        _InfoLine(label: 'Next birthday', value: countdown),
+                        _InfoLine(
+                          label: 'Weekday',
+                          value: details.nextBirthdayWeekday,
                         ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(
-                          '${difference.years} years, ${difference.months} months, ${difference.days} days',
+                        _InfoLine(
+                          label: 'Western zodiac',
+                          value: ZodiacUtils.fromBirthDate(
+                            person.birthDate,
+                          ).westernSign,
                         ),
+                        if (difference != null) ...[
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(
+                            'Age difference with you',
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            '${difference.years} years, ${difference.months} months, ${difference.days} days',
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                AppPrimaryButton(
-                  label: 'Edit Person',
-                  icon: Icons.edit_outlined,
-                  onPressed: () => _edit(context, ref, person),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                AppPrimaryButton(
-                  label: days == 0
-                      ? 'Send Birthday Wish'
-                      : 'Prepare a Birthday Wish',
-                  icon: Icons.celebration_outlined,
-                  onPressed: () => showBirthdayWishComposer(
-                    context,
-                    person: person,
-                    age: turns,
+                AppEntrance(
+                  delay: const Duration(milliseconds: 105),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      AppPrimaryButton(
+                        label: days == 0
+                            ? 'Send Birthday Wish'
+                            : 'Prepare a Birthday Wish',
+                        icon: Icons.celebration_outlined,
+                        onPressed: () => showBirthdayWishComposer(
+                          context,
+                          person: person,
+                          age: turns,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      OutlinedButton.icon(
+                        onPressed: () => _edit(context, ref, person),
+                        icon: const Icon(Icons.edit_outlined),
+                        label: const Text('Edit Person'),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      OutlinedButton.icon(
+                        onPressed: () => _shareCard(context, ref, person),
+                        icon: const Icon(Icons.card_giftcard_outlined),
+                        label: const Text('Share Birthday Card'),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      TextButton.icon(
+                        onPressed: () =>
+                            _shareInfo(context, ref, person, countdown),
+                        icon: const Icon(Icons.share_outlined),
+                        label: const Text('Share Birthday Info'),
+                      ),
+                      TextButton.icon(
+                        style: TextButton.styleFrom(
+                          foregroundColor: Theme.of(context).colorScheme.error,
+                        ),
+                        onPressed: () => _delete(context, ref, person),
+                        icon: const Icon(Icons.delete_outline),
+                        label: const Text('Delete Person'),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                OutlinedButton.icon(
-                  onPressed: () => _shareCard(context, ref, person),
-                  icon: const Icon(Icons.card_giftcard_outlined),
-                  label: const Text('Share Birthday Card'),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                TextButton.icon(
-                  onPressed: () => _shareInfo(context, ref, person, countdown),
-                  icon: const Icon(Icons.share_outlined),
-                  label: const Text('Share Birthday Info'),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                TextButton.icon(
-                  onPressed: () => _delete(context, ref, person),
-                  icon: const Icon(Icons.delete_outline),
-                  label: const Text('Delete Person'),
                 ),
               ],
             ),

@@ -313,10 +313,16 @@ class _LifeEventCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: scheme.primaryContainer,
-            child: Text(event.emoji, style: const TextStyle(fontSize: 22)),
+          Hero(
+            tag: 'life-event-avatar:${event.id}',
+            child: Material(
+              color: Colors.transparent,
+              child: CircleAvatar(
+                radius: 24,
+                backgroundColor: scheme.primaryContainer,
+                child: Text(event.emoji, style: const TextStyle(fontSize: 22)),
+              ),
+            ),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(

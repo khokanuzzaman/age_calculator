@@ -271,10 +271,16 @@ class _PersonCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.base),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: scheme.primaryContainer,
-            child: Text(person.emoji, style: const TextStyle(fontSize: 22)),
+          Hero(
+            tag: 'person-avatar:${person.id}',
+            child: Material(
+              color: Colors.transparent,
+              child: CircleAvatar(
+                radius: 24,
+                backgroundColor: scheme.primaryContainer,
+                child: Text(person.emoji, style: const TextStyle(fontSize: 22)),
+              ),
+            ),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -321,7 +327,19 @@ class _PersonCard extends StatelessWidget {
                     ? 'Remove from favorites'
                     : 'Add to favorites',
                 onPressed: onFavorite,
-                icon: Icon(person.isFavorite ? Icons.star : Icons.star_outline),
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 150),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  transitionBuilder: (child, animation) => FadeTransition(
+                    opacity: animation,
+                    child: ScaleTransition(scale: animation, child: child),
+                  ),
+                  child: Icon(
+                    person.isFavorite ? Icons.star : Icons.star_outline,
+                    key: ValueKey<bool>(person.isFavorite),
+                  ),
+                ),
               ),
               IconButton(
                 tooltip: 'Remove',

@@ -15,6 +15,7 @@ import '../../../core/sharing/share_engine.dart';
 import '../../../core/sharing/share_payload.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_entrance.dart';
 import '../../../shared/widgets/app_primary_button.dart';
 import '../../../shared/widgets/app_screen_backdrop.dart';
 import '../../../shared/widgets/theme_mode_bottom_sheet.dart';
@@ -137,7 +138,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     AppSpacing.md,
                   ),
                   sliver: SliverToBoxAdapter(
-                    child: _DashboardHeader(dashboard: dashboard),
+                    child: AppEntrance(
+                      child: _DashboardHeader(dashboard: dashboard),
+                    ),
                   ),
                 ),
                 SliverPadding(
@@ -145,36 +148,71 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     horizontal: AppSpacing.base,
                   ),
                   sliver: SliverToBoxAdapter(
-                    child: dashboard.hasProfile
-                        ? _PersonalizedContent(
-                            dashboard: dashboard,
-                            onProfile: _openProfile,
-                            onCalculateAge: () => _openAgeCalculator(dashboard),
-                            onUpcoming: _openUpcoming,
-                            onQuickAction: _openTarget,
-                          )
-                        : _SetupCard(
-                            onSetBirthday: _openProfile,
-                            onCalculateAge: () => _openAgeCalculator(dashboard),
+                    child: AppEntrance(
+                      delay: const Duration(milliseconds: 60),
+                      child: AnimatedSwitcher(
+                        duration: MediaQuery.disableAnimationsOf(context)
+                            ? Duration.zero
+                            : AppDurations.normal,
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        transitionBuilder: (child, animation) => FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0, 0.015),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
                           ),
+                        ),
+                        child: KeyedSubtree(
+                          key: ValueKey(dashboard.hasProfile),
+                          child: dashboard.hasProfile
+                              ? _PersonalizedContent(
+                                  dashboard: dashboard,
+                                  onProfile: _openProfile,
+                                  onCalculateAge: () =>
+                                      _openAgeCalculator(dashboard),
+                                  onUpcoming: _openUpcoming,
+                                  onQuickAction: _openTarget,
+                                )
+                              : _SetupCard(
+                                  onSetBirthday: _openProfile,
+                                  onCalculateAge: () =>
+                                      _openAgeCalculator(dashboard),
+                                ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.only(
-                      top: AppSpacing.lg,
-                      bottom: AppSpacing.sm,
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.base,
+                      AppSpacing.lg,
+                      AppSpacing.base,
+                      AppSpacing.sm,
                     ),
-                    child: Text(
-                      'Tools',
-                      style: textTheme.titleMedium?.copyWith(
-                        color: scheme.onSurfaceVariant,
+                    child: AppEntrance(
+                      delay: const Duration(milliseconds: 110),
+                      child: Text(
+                        'Tools',
+                        style: textTheme.titleMedium?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                   ),
                 ),
                 SliverPadding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.huge),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.base,
+                    0,
+                    AppSpacing.base,
+                    AppSpacing.huge,
+                  ),
                   sliver: SliverGrid(
                     gridDelegate:
                         const SliverGridDelegateWithMaxCrossAxisExtent(
@@ -439,12 +477,15 @@ class _PersonalizedContent extends StatelessWidget {
       children: [
         _AgeCard(dashboard: dashboard, onTap: onCalculateAge),
         const SizedBox(height: AppSpacing.md),
-        Row(
-          children: [
-            Expanded(child: _BirthdayCard(dashboard: dashboard)),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(child: _MilestoneCard(dashboard: dashboard)),
-          ],
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: _BirthdayCard(dashboard: dashboard)),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(child: _MilestoneCard(dashboard: dashboard)),
+            ],
+          ),
         ),
         const SizedBox(height: AppSpacing.lg),
         const _SectionLabel(title: 'Coming Up', icon: Icons.upcoming_outlined),

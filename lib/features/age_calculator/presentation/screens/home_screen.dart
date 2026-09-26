@@ -9,7 +9,9 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../../../shared/widgets/app_card.dart';
 import '../../../../shared/widgets/app_date_field.dart';
+import '../../../../shared/widgets/app_entrance.dart';
 import '../../../../shared/widgets/app_primary_button.dart';
+import '../../../../shared/widgets/app_screen_backdrop.dart';
 import '../../../../shared/widgets/animated_result_card.dart';
 import '../../../about/presentation/screens/about_screen.dart';
 import '../../../famous_birthdays/provider/famous_birthday_provider.dart';
@@ -88,7 +90,7 @@ class AgeCalculatorScreen extends ConsumerWidget {
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         child: Stack(
           children: [
-            const Positioned.fill(child: _BackdropLayer()),
+            const Positioned.fill(child: AppScreenBackdrop()),
             SafeArea(
               top: false,
               child: SingleChildScrollView(
@@ -100,8 +102,7 @@ class AgeCalculatorScreen extends ConsumerWidget {
                       const _IntroHeader(),
                       const SizedBox(height: AppSpacing.base),
                     ],
-                    _AnimatedEnter(
-                      delay: 0,
+                    AppEntrance(
                       child: AppDateField(
                         label: 'Date of Birth',
                         value: state.birthDate,
@@ -113,8 +114,8 @@ class AgeCalculatorScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.md),
-                    _AnimatedEnter(
-                      delay: 70,
+                    AppEntrance(
+                      delay: const Duration(milliseconds: 70),
                       child: AppDateField(
                         label: 'Calculate As Of',
                         value: state.asOfDate,
@@ -123,8 +124,8 @@ class AgeCalculatorScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    _AnimatedEnter(
-                      delay: 120,
+                    AppEntrance(
+                      delay: const Duration(milliseconds: 120),
                       child: AppPrimaryButton(
                         label: 'Calculate',
                         icon: Icons.calculate_outlined,
@@ -146,12 +147,14 @@ class AgeCalculatorScreen extends ConsumerWidget {
                       ),
                     ),
                     AnimatedSwitcher(
-                      duration: AppDurations.slow,
+                      duration: MediaQuery.disableAnimationsOf(context)
+                          ? Duration.zero
+                          : AppDurations.slow,
                       switchInCurve: Curves.easeOutCubic,
                       switchOutCurve: Curves.easeInCubic,
                       transitionBuilder: (child, animation) {
                         final offsetAnimation = Tween<Offset>(
-                          begin: const Offset(0, 0.08),
+                          begin: const Offset(0, 0.035),
                           end: Offset.zero,
                         ).animate(animation);
 
@@ -278,101 +281,6 @@ class AgeCalculatorScreen extends ConsumerWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _AnimatedEnter extends StatefulWidget {
-  const _AnimatedEnter({required this.child, required this.delay});
-
-  final Widget child;
-  final int delay;
-
-  @override
-  State<_AnimatedEnter> createState() => _AnimatedEnterState();
-}
-
-class _AnimatedEnterState extends State<_AnimatedEnter> {
-  bool _visible = false;
-
-  @override
-  void initState() {
-    super.initState();
-    Future<void>.delayed(Duration(milliseconds: widget.delay), () {
-      if (!mounted) {
-        return;
-      }
-      setState(() => _visible = true);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedOpacity(
-      opacity: _visible ? 1 : 0,
-      duration: AppDurations.slow,
-      curve: Curves.easeOutCubic,
-      child: AnimatedSlide(
-        offset: _visible ? Offset.zero : const Offset(0, 0.08),
-        duration: AppDurations.slow,
-        curve: Curves.easeOutCubic,
-        child: widget.child,
-      ),
-    );
-  }
-}
-
-class _BackdropLayer extends StatelessWidget {
-  const _BackdropLayer();
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
-    return IgnorePointer(
-      child: Stack(
-        children: [
-          Container(color: scheme.surface),
-          Positioned(
-            top: -120,
-            right: -80,
-            child: _GlowOrb(
-              color: scheme.primary.withValues(alpha: 0.12),
-              size: 280,
-            ),
-          ),
-          Positioned(
-            bottom: -110,
-            left: -70,
-            child: _GlowOrb(
-              color: scheme.secondary.withValues(alpha: 0.09),
-              size: 240,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _GlowOrb extends StatelessWidget {
-  const _GlowOrb({required this.color, required this.size});
-
-  final Color color;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [color, color.withValues(alpha: 0)],
-          stops: const [0.05, 1],
-        ),
-      ),
     );
   }
 }

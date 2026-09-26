@@ -7,6 +7,7 @@ import '../../../core/analytics/app_analytics.dart';
 import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_entrance.dart';
 import '../../../shared/widgets/app_screen_backdrop.dart';
 
 class DateToolsScreen extends ConsumerStatefulWidget {
@@ -37,15 +38,24 @@ class _DateToolsScreenState extends ConsumerState<DateToolsScreen> {
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.base),
               children: [
-                Text(
-                  'Practical date math for everyday planning.',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                AppEntrance(
+                  child: Text(
+                    'Practical date math for everyday planning.',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.base),
-                for (final tool in _tools) ...[
-                  _DateToolTile(tool: tool),
+                for (var index = 0; index < _tools.length; index++) ...[
+                  AppEntrance(
+                    key: ValueKey(_tools[index].route),
+                    delay: Duration(milliseconds: 35 * (index + 1)),
+                    child: _DateToolTile(
+                      key: ValueKey(_tools[index].route),
+                      tool: _tools[index],
+                    ),
+                  ),
                   const SizedBox(height: AppSpacing.sm),
                 ],
               ],
@@ -117,7 +127,7 @@ const _tools = [
 ];
 
 class _DateToolTile extends StatelessWidget {
-  const _DateToolTile({required this.tool});
+  const _DateToolTile({super.key, required this.tool});
 
   final _DateToolDefinition tool;
 
@@ -132,8 +142,18 @@ class _DateToolTile extends StatelessWidget {
           foregroundColor: scheme.onPrimaryContainer,
           child: Icon(tool.icon),
         ),
-        title: Text(tool.title),
-        subtitle: Text(tool.description),
+        title: Text(
+          tool.title,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        subtitle: Text(
+          tool.description,
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+        ),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => Navigator.of(context).pushNamed(tool.route),
       ),

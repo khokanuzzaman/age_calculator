@@ -29,11 +29,11 @@ class AppCard extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               scheme.surfaceContainerLow,
-              scheme.primaryContainer.withValues(alpha: 0.25),
+              scheme.primaryContainer.withValues(alpha: 0.14),
             ],
           ),
           border: Border.all(
-            color: scheme.outlineVariant.withValues(alpha: 0.45),
+            color: scheme.outlineVariant.withValues(alpha: 0.34),
           ),
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),

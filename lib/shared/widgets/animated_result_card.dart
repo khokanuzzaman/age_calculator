@@ -5,9 +5,9 @@ class AnimatedResultCard extends StatefulWidget {
     super.key,
     required this.child,
     this.delay = Duration.zero,
-    this.duration = const Duration(milliseconds: 700),
+    this.duration = const Duration(milliseconds: 380),
     this.curve = Curves.easeOutCubic,
-    this.beginOffset = const Offset(0, 0.05),
+    this.beginOffset = const Offset(0, 0.035),
     this.animate = true,
   });
 
