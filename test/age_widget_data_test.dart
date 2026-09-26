@@ -46,15 +46,18 @@ void main() {
       expect(data.daysUntilNextBirthday, 0);
     });
 
-    test('Feb-29 birth in a non-leap year still computes a valid countdown', () {
-      final data = AgeCalculationUtils.widgetData(
-        DateTime(2004, 2, 29),
-        DateTime(2023, 3, 1), // day after the observed Feb-28 birthday
-      );
-      expect(data.years, 19);
-      expect(data.daysUntilNextBirthday, greaterThan(0));
-      expect(data.daysUntilNextBirthday, lessThanOrEqualTo(366));
-    });
+    test(
+      'Feb-29 birth in a non-leap year still computes a valid countdown',
+      () {
+        final data = AgeCalculationUtils.widgetData(
+          DateTime(2004, 2, 29),
+          DateTime(2023, 3, 1), // day after the observed Feb-28 birthday
+        );
+        expect(data.years, 19);
+        expect(data.daysUntilNextBirthday, greaterThan(0));
+        expect(data.daysUntilNextBirthday, lessThanOrEqualTo(366));
+      },
+    );
 
     test('singular "1 year" copy', () {
       final data = AgeCalculationUtils.widgetData(

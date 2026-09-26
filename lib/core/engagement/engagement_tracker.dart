@@ -26,6 +26,7 @@ class EngagementTracker {
   final AppAnalytics _analytics;
   final AppVersionLoader _appVersionLoader;
   final DateTime Function() _now;
+  bool _reviewRequestInProgress = false;
 
   Future<void> recordMeaningfulAction(EngagementAction action) async {
     await _repository.record(action, now: _now());
@@ -33,21 +34,22 @@ class EngagementTracker {
   }
 
   Future<void> _maybeRequestReview(EngagementAction action) async {
-    final version = await _appVersionLoader();
-    final now = _now();
-    if (!_repository.isEligible(now: now, appVersion: version)) {
+    if (_reviewRequestInProgress) {
       return;
     }
-    bool available;
+    _reviewRequestInProgress = true;
     try {
-      available = await _reviewGateway.isAvailable();
-    } catch (_) {
-      return;
-    }
-    if (!available) {
-      return;
-    }
-    try {
+      final version = await _appVersionLoader();
+      if (!EngagementRepository.isValidSemanticVersion(version)) {
+        return;
+      }
+      final now = _now();
+      if (!_repository.isEligible(now: now, appVersion: version)) {
+        return;
+      }
+      if (!await _reviewGateway.isAvailable()) {
+        return;
+      }
       await _reviewGateway.requestReview();
       await _repository.markReviewPromptRequested(
         date: now,
@@ -59,6 +61,8 @@ class EngagementTracker {
       );
     } catch (_) {
       // A review prompt is best-effort and must never affect the completed action.
+    } finally {
+      _reviewRequestInProgress = false;
     }
   }
 

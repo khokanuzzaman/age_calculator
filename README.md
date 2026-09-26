@@ -8,11 +8,13 @@ for Android and iOS and keeps personal inputs on the device.
 - Exact age calculation with lifetime totals, zodiac, numerology, and milestones
 - Date Tools hub with Date Difference, Date Add/Subtract, Working Days,
   Weekday Finder, DOB Finder, Countdown, and Leap Year
-- Saved birthdays with local yearly reminders
+- Primary Profile and a personalized Today Dashboard
+- My People birthday tracking with smart local reminders and favorites
+- Birthday Wishes and shareable birthday cards
 - Famous Birthdays and On This Day results
-- Life Timeline and Life Calendar views
+- Recurring Life Timeline anniversaries and Life Calendar views
 - Android home-screen widget for age and birthday/event information
-- Light and dark themes, sharing, and privacy/about screens
+- Light and dark themes, central sharing, and privacy/about screens
 - Conservative native in-app review prompts after meaningful local actions;
   Settings also provides an explicit Rate Age Calculator store action
 
@@ -24,8 +26,8 @@ requests to Wikimedia's On This Day endpoint; bundled curated data is used as
 a local supplement/fallback. No account or backend is required.
 
 Date Tools calculations remain local and offline. Working Days counts both
-boundary dates and excludes public holidays; it supports Saturday/Sunday and
-Friday/Saturday weekend presets without location detection or a holiday API.
+boundary dates and excludes only the selected weekend pattern. Public holidays
+are not accounted for; the app does not use location detection or a holiday API.
 Engagement state used to decide whether the platform review prompt is
 appropriate is stored only in SharedPreferences and is never uploaded.
 

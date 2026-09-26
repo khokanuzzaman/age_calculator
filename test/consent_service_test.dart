@@ -8,10 +8,7 @@ void main() {
     });
 
     test('skips ad init when the SDK reports ads cannot be requested', () {
-      expect(
-        ConsentService.shouldInitializeAds(canRequestAds: false),
-        isFalse,
-      );
+      expect(ConsentService.shouldInitializeAds(canRequestAds: false), isFalse);
     });
   });
 }

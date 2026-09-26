@@ -141,7 +141,7 @@ class _WorkingDaysScreenState extends ConsumerState<WorkingDaysScreen> {
                         const SizedBox(height: AppSpacing.sm),
                         Text('Weekend: ${_result!.weekendPattern.label}'),
                         Text(
-                          'Inclusive range · public holidays are not included.',
+                          'Inclusive range · public holidays are not accounted for.',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],

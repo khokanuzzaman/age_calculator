@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,6 +10,7 @@ import '../../../core/analytics/app_analytics.dart';
 import '../../../core/analytics/app_analytics_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/engagement/engagement_provider.dart';
+import '../../../core/sharing/app_store_links.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_screen_backdrop.dart';
 import '../../../shared/widgets/theme_mode_bottom_sheet.dart';
@@ -162,23 +164,7 @@ class SettingsScreen extends ConsumerWidget {
                           title: const Text('Rate Age Calculator'),
                           subtitle: const Text('Open the app store listing'),
                           trailing: const Icon(Icons.chevron_right),
-                          onTap: () async {
-                            ref
-                                .read(appAnalyticsProvider)
-                                .logEventSafely(
-                                  AnalyticsEvent.rateAppClicked,
-                                  parameters: const <String, Object>{
-                                    'source': 'settings',
-                                  },
-                                );
-                            try {
-                              await ref
-                                  .read(reviewGatewayProvider)
-                                  .openStoreListing(appStoreId: '6802000455');
-                            } catch (_) {
-                              // Store links are best-effort and never block settings.
-                            }
-                          },
+                          onTap: () => _openStoreListing(ref),
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         _LinkRow(
@@ -201,6 +187,35 @@ class SettingsScreen extends ConsumerWidget {
   Future<void> _openLink(String rawUrl) async {
     final uri = Uri.parse(rawUrl);
     await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  Future<void> _openStoreListing(WidgetRef ref) async {
+    ref
+        .read(appAnalyticsProvider)
+        .logEventSafely(
+          AnalyticsEvent.rateAppClicked,
+          parameters: const <String, Object>{'source': 'settings'},
+        );
+
+    try {
+      await ref
+          .read(reviewGatewayProvider)
+          .openStoreListing(appStoreId: '6802000455');
+      return;
+    } catch (_) {
+      final storeUrl = switch (defaultTargetPlatform) {
+        TargetPlatform.iOS => AppStoreLinks.ios,
+        _ => AppStoreLinks.android,
+      };
+      try {
+        await launchUrl(
+          Uri.parse(storeUrl),
+          mode: LaunchMode.externalApplication,
+        );
+      } catch (_) {
+        // Store links are best-effort and never block settings.
+      }
+    }
   }
 }
 

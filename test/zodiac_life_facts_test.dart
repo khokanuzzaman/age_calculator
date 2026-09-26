@@ -5,16 +5,26 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('ZodiacUtils western sign', () {
     test('resolves signs across cusp boundaries', () {
-      expect(ZodiacUtils.fromBirthDate(DateTime(1990, 1, 1)).westernSign,
-          'Capricorn');
-      expect(ZodiacUtils.fromBirthDate(DateTime(1990, 1, 20)).westernSign,
-          'Aquarius');
-      expect(ZodiacUtils.fromBirthDate(DateTime(1990, 3, 21)).westernSign,
-          'Aries');
-      expect(ZodiacUtils.fromBirthDate(DateTime(1990, 12, 21)).westernSign,
-          'Sagittarius');
-      expect(ZodiacUtils.fromBirthDate(DateTime(1990, 12, 22)).westernSign,
-          'Capricorn');
+      expect(
+        ZodiacUtils.fromBirthDate(DateTime(1990, 1, 1)).westernSign,
+        'Capricorn',
+      );
+      expect(
+        ZodiacUtils.fromBirthDate(DateTime(1990, 1, 20)).westernSign,
+        'Aquarius',
+      );
+      expect(
+        ZodiacUtils.fromBirthDate(DateTime(1990, 3, 21)).westernSign,
+        'Aries',
+      );
+      expect(
+        ZodiacUtils.fromBirthDate(DateTime(1990, 12, 21)).westernSign,
+        'Sagittarius',
+      );
+      expect(
+        ZodiacUtils.fromBirthDate(DateTime(1990, 12, 22)).westernSign,
+        'Capricorn',
+      );
     });
   });
 

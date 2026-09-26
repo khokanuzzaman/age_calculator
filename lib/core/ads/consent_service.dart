@@ -47,8 +47,10 @@ class ConsentService {
       await updateCompleter.future;
     } catch (error) {
       if (kDebugForceEEAConsent) {
-        debugPrint('[UMP] requestConsentInfoUpdate failed: '
-            '${_describeError(error)}');
+        debugPrint(
+          '[UMP] requestConsentInfoUpdate failed: '
+          '${_describeError(error)}',
+        );
       }
       rethrow;
     }

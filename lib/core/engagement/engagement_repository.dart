@@ -35,6 +35,14 @@ class EngagementRepository {
 
   final SharedPreferences _preferences;
 
+  Future<void> ensureInitialized({DateTime? now}) async {
+    if (_preferences.containsKey(_firstSeenDateKey)) {
+      return;
+    }
+    final today = AppDateUtils.dateOnly(now ?? DateTime.now());
+    await _preferences.setString(_firstSeenDateKey, _formatDate(today));
+  }
+
   EngagementState load({DateTime? now}) {
     final today = AppDateUtils.dateOnly(now ?? DateTime.now());
     final rawFirstSeen = _preferences.getString(_firstSeenDateKey);
@@ -60,12 +68,9 @@ class EngagementRepository {
     EngagementAction action, {
     DateTime? now,
   }) async {
+    await ensureInitialized(now: now);
     final current = load(now: now);
     final today = AppDateUtils.dateOnly(now ?? DateTime.now());
-    await _preferences.setString(
-      _firstSeenDateKey,
-      _formatDate(current.firstSeenDate),
-    );
     await _preferences.setInt(
       _actionCountKey,
       current.meaningfulActionCount + 1,
@@ -76,6 +81,9 @@ class EngagementRepository {
   }
 
   bool isEligible({required DateTime now, required String appVersion}) {
+    if (!isValidSemanticVersion(appVersion)) {
+      return false;
+    }
     final state = load(now: now);
     final today = AppDateUtils.dateOnly(now);
     final daysSinceFirstSeen = today.difference(state.firstSeenDate).inDays;
@@ -88,6 +96,16 @@ class EngagementRepository {
         state.lastPromptedAppVersion != appVersion &&
         daysSincePrompt >= 120 &&
         state.reviewPromptCount < 2;
+  }
+
+  static bool isValidSemanticVersion(String value) {
+    final candidate = value.trim();
+    if (candidate.isEmpty ||
+        candidate.toLowerCase() == 'unknown' ||
+        candidate.toLowerCase() == 'unavailable') {
+      return false;
+    }
+    return RegExp(r'^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$').hasMatch(candidate);
   }
 
   Future<void> markReviewPromptRequested({

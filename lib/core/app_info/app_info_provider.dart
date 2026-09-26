@@ -6,6 +6,10 @@ final appVersionProvider = FutureProvider<String>(
   (_) => AppInfoService().loadVersionLabel(),
 );
 
+final semanticAppVersionProvider = FutureProvider<String>(
+  (_) => AppInfoService().loadSemanticVersion(),
+);
+
 String displayAppVersion(AsyncValue<String> state) {
   return state.when(
     data: (version) => version,

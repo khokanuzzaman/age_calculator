@@ -40,21 +40,9 @@ class LifeFactsUtils {
     final weekends = days / 7.0; // number of weeks ≈ number of weekends
 
     return [
-      LifeFact(
-        emoji: '❤️',
-        label: 'Heartbeats',
-        value: _compact(heartbeats),
-      ),
-      LifeFact(
-        emoji: '🫁',
-        label: 'Breaths taken',
-        value: _compact(breaths),
-      ),
-      LifeFact(
-        emoji: '😴',
-        label: 'Hours slept',
-        value: _compact(sleepHours),
-      ),
+      LifeFact(emoji: '❤️', label: 'Heartbeats', value: _compact(heartbeats)),
+      LifeFact(emoji: '🫁', label: 'Breaths taken', value: _compact(breaths)),
+      LifeFact(emoji: '😴', label: 'Hours slept', value: _compact(sleepHours)),
       LifeFact(emoji: '👁️', label: 'Times blinked', value: _compact(blinks)),
       LifeFact(emoji: '👣', label: 'Steps walked', value: _compact(steps)),
       LifeFact(

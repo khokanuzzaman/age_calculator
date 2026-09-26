@@ -48,7 +48,9 @@ class NumerologyCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Text(
             'Just for fun — derived from your birth date, not a prediction.',
-            style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+            style: textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),

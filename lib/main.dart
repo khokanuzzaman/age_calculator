@@ -16,6 +16,7 @@ import 'core/ads/consent_service.dart';
 import 'core/ads/interstitial_ad_manager.dart';
 import 'core/analytics/app_analytics_provider.dart';
 import 'core/firebase/firebase_bootstrap.dart';
+import 'core/engagement/engagement_repository.dart';
 import 'core/notifications/notification_service.dart';
 import 'core/widgets/home_widget_service.dart';
 
@@ -24,6 +25,12 @@ Future<void> main() async {
   GoogleFonts.config.allowRuntimeFetching = false;
   final firebaseStartup = await FirebaseBootstrap.initialize();
   final sharedPreferences = await SharedPreferences.getInstance();
+
+  try {
+    await EngagementRepository(sharedPreferences).ensureInitialized();
+  } catch (_) {
+    // Review eligibility initialization is optional; never block app startup.
+  }
 
   // Best-effort: prepare notifications so scheduled birthday reminders fire.
   try {

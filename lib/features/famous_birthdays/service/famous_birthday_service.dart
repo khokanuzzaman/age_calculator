@@ -73,20 +73,14 @@ class FamousBirthdayService {
             monthInt,
             dayInt,
           );
-          merged = _dedupeAndRank([
-            ...merged,
-            ...wikidataCitizenship,
-          ], locale);
+          merged = _dedupeAndRank([...merged, ...wikidataCitizenship], locale);
 
           if (!merged.any(_isSouthAsianItem)) {
             final wikidataBirthPlace = await _fetchWikidataBirthPlaceFallback(
               monthInt,
               dayInt,
             );
-            merged = _dedupeAndRank([
-              ...merged,
-              ...wikidataBirthPlace,
-            ], locale);
+            merged = _dedupeAndRank([...merged, ...wikidataBirthPlace], locale);
           }
         }
       }
