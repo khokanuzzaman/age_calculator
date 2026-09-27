@@ -8,32 +8,40 @@ class AppCard extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.all(AppSpacing.base),
     this.onTap,
+    this.emphasized = false,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
   final VoidCallback? onTap;
+  final bool emphasized;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(AppRadius.lg),
-      clipBehavior: Clip.antiAlias,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
+    final gradient = emphasized
+        ? LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
               scheme.surfaceContainerLow,
-              scheme.primaryContainer.withValues(alpha: 0.14),
+              scheme.primaryContainer.withValues(alpha: 0.18),
             ],
-          ),
+          )
+        : null;
+
+    return Material(
+      color: emphasized ? Colors.transparent : scheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(AppRadius.lg),
+      clipBehavior: Clip.antiAlias,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: gradient,
           border: Border.all(
-            color: scheme.outlineVariant.withValues(alpha: 0.34),
+            color: scheme.outlineVariant.withValues(
+              alpha: emphasized ? 0.42 : 0.30,
+            ),
           ),
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),

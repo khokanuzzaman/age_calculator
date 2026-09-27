@@ -49,6 +49,73 @@ void main() {
     expect(find.text('Settings'), findsOneWidget);
   });
 
+  testWidgets('first-time dashboard keeps setup and tools compact', (
+    WidgetTester tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await pumpApp(tester);
+
+    expect(find.text('Age Calculator'), findsWidgets);
+    expect(find.text('Make Age Calculator yours'), findsOneWidget);
+    expect(find.text('Set My Birthday'), findsOneWidget);
+    expect(find.text('Tools'), findsOneWidget);
+    expect(find.text('Personal'), findsOneWidget);
+    expect(find.text('Calculate Your Age'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('Calculate Your Age')).dy,
+      lessThan(844),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'personalized dashboard separates Today and a long profile name',
+    (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(320, 800));
+      tester.binding.platformDispatcher.textScaleFactorTestValue = 1.35;
+      addTearDown(() {
+        tester.binding.platformDispatcher.clearTextScaleFactorTestValue();
+        return tester.binding.setSurfaceSize(null);
+      });
+      await pumpApp(
+        tester,
+        preferences: {
+          'primary_birth_date_ms': DateTime(1990, 1, 1).millisecondsSinceEpoch,
+          'primary_profile_display_name': 'Md Khokanuzzaman Khokan',
+        },
+      );
+
+      final nameFinder = find.text('Md Khokanuzzaman Khokan');
+      expect(find.text('Today'), findsOneWidget);
+      expect(nameFinder, findsOneWidget);
+      expect(tester.widget<Text>(nameFinder).maxLines, 2);
+      expect(find.text('Your age today'), findsOneWidget);
+      expect(find.text('NEXT BIRTHDAY'), findsOneWidget);
+      expect(find.text('NEXT MILESTONE'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('personalized dashboard respects the light color scheme', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(
+      tester,
+      preferences: {
+        'theme_mode': 'light',
+        'primary_birth_date_ms': DateTime(1990, 1, 1).millisecondsSinceEpoch,
+        'primary_profile_display_name': 'Khokan',
+      },
+    );
+
+    final ageLabel = find.text('Your age today');
+    expect(ageLabel, findsOneWidget);
+    expect(Theme.of(tester.element(ageLabel)).brightness, Brightness.light);
+    expect(find.text('NEXT BIRTHDAY'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('opens the life timeline from the dashboard', (
     WidgetTester tester,
   ) async {

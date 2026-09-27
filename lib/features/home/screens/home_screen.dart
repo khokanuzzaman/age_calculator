@@ -16,7 +16,6 @@ import '../../../core/sharing/share_payload.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_entrance.dart';
-import '../../../shared/widgets/app_primary_button.dart';
 import '../../../shared/widgets/app_screen_backdrop.dart';
 import '../../../shared/widgets/theme_mode_bottom_sheet.dart';
 import '../../age_calculator/application/age_calculator_notifier.dart';
@@ -48,8 +47,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
     final dashboard = ref.watch(todayDashboardProvider);
-    final scheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -133,9 +130,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.base,
+                    AppSpacing.xs,
                     AppSpacing.base,
-                    AppSpacing.base,
-                    AppSpacing.md,
+                    AppSpacing.sm,
                   ),
                   sliver: SliverToBoxAdapter(
                     child: AppEntrance(
@@ -149,7 +146,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   sliver: SliverToBoxAdapter(
                     child: AppEntrance(
-                      delay: const Duration(milliseconds: 60),
+                      delay: const Duration(milliseconds: 45),
                       child: AnimatedSwitcher(
                         duration: MediaQuery.disableAnimationsOf(context)
                             ? Duration.zero
@@ -191,110 +188,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(
                       AppSpacing.base,
-                      AppSpacing.lg,
+                      AppSpacing.md,
                       AppSpacing.base,
-                      AppSpacing.sm,
+                      AppSpacing.huge,
                     ),
-                    child: AppEntrance(
-                      delay: const Duration(milliseconds: 110),
-                      child: Text(
-                        'Tools',
-                        style: textTheme.titleMedium?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.base,
-                    0,
-                    AppSpacing.base,
-                    AppSpacing.huge,
-                  ),
-                  sliver: SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 360,
-                          mainAxisExtent: 132,
-                          mainAxisSpacing: AppSpacing.md,
-                          crossAxisSpacing: AppSpacing.md,
-                        ),
-                    delegate: SliverChildListDelegate.fixed([
-                      ToolMenuCard(
-                        accent: _ToolColors.age,
-                        title: 'Calculate Your Age',
-                        description:
-                            'Exact age, zodiac, milestones & lifetime totals',
-                        icon: Icons.cake_outlined,
-                        onTap: () => _openAgeCalculator(dashboard),
-                      ),
-                      _tool(
-                        accent: _ToolColors.saved,
-                        title: 'My People',
-                        description: 'Track the people you love',
-                        icon: Icons.favorite_outline,
-                        route: AppRoutes.savedBirthdays,
-                        target: 'my_people',
-                      ),
-                      _tool(
-                        accent: _ToolColors.timeline,
-                        title: 'Life Timeline',
-                        description: 'Age at important moments',
-                        icon: Icons.timeline_outlined,
-                        route: AppRoutes.lifeTimeline,
-                      ),
-                      _tool(
-                        accent: _ToolColors.calendar,
-                        title: 'Life Calendar',
-                        description: 'See your life in weeks',
-                        icon: Icons.grid_view_rounded,
-                        route: AppRoutes.lifeCalendar,
-                      ),
-                      _tool(
-                        accent: _ToolColors.dateDiff,
-                        title: 'Date Tools',
-                        description: 'Date math in one place',
-                        icon: Icons.build_circle_outlined,
-                        route: AppRoutes.dateTools,
-                      ),
-                      _tool(
-                        accent: _ToolColors.ageDiff,
-                        title: 'Age Difference',
-                        description: 'Compare two ages',
-                        icon: Icons.people_alt_outlined,
-                        route: AppRoutes.ageDifference,
-                      ),
-                      _tool(
-                        accent: _ToolColors.famous,
-                        title: 'Famous Birthdays',
-                        description: 'Who shares your day',
-                        icon: Icons.star_outline,
-                        route: AppRoutes.famousBirthdays,
-                      ),
-                      _tool(
-                        accent: _ToolColors.history,
-                        title: 'On This Day',
-                        description: 'History by date',
-                        icon: Icons.history_outlined,
-                        route: AppRoutes.onThisDay,
-                      ),
-                      _tool(
-                        accent: _ToolColors.settings,
-                        title: 'Settings',
-                        description: 'Theme & preferences',
-                        icon: Icons.settings_outlined,
-                        route: AppRoutes.settings,
-                      ),
-                      _tool(
-                        accent: _ToolColors.about,
-                        title: 'About',
-                        description: 'Developer & privacy',
-                        icon: Icons.info_outline,
-                        route: AppRoutes.about,
-                      ),
-                    ]),
+                    child: _buildTools(dashboard),
                   ),
                 ),
               ],
@@ -305,12 +203,152 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  Widget _buildTools(TodayDashboardState dashboard) {
+    final primaryTools = <Widget>[
+      ToolMenuCard(
+        featured: true,
+        accent: _ToolColors.age,
+        title: 'Calculate Your Age',
+        description: 'Exact age, zodiac, milestones & lifetime totals',
+        icon: Icons.cake_outlined,
+        onTap: () => _openAgeCalculator(dashboard),
+      ),
+      _tool(
+        featured: true,
+        accent: _ToolColors.saved,
+        title: 'My People',
+        description: 'Track the people you love',
+        icon: Icons.favorite_outline,
+        route: AppRoutes.savedBirthdays,
+        target: 'my_people',
+      ),
+      _tool(
+        featured: true,
+        accent: _ToolColors.timeline,
+        title: 'Life Timeline',
+        description: 'Age at important moments',
+        icon: Icons.timeline_outlined,
+        route: AppRoutes.lifeTimeline,
+      ),
+      _tool(
+        featured: true,
+        accent: _ToolColors.calendar,
+        title: 'Life Calendar',
+        description: 'See your life in weeks',
+        icon: Icons.grid_view_rounded,
+        route: AppRoutes.lifeCalendar,
+      ),
+    ];
+    final utilityTools = <Widget>[
+      _tool(
+        accent: _ToolColors.dateDiff,
+        title: 'Date Tools',
+        description: 'Date math in one place',
+        icon: Icons.build_circle_outlined,
+        route: AppRoutes.dateTools,
+      ),
+      _tool(
+        accent: _ToolColors.ageDiff,
+        title: 'Age Difference',
+        description: 'Compare two ages',
+        icon: Icons.people_alt_outlined,
+        route: AppRoutes.ageDifference,
+      ),
+      _tool(
+        accent: _ToolColors.famous,
+        title: 'Famous Birthdays',
+        description: 'Who shares your day',
+        icon: Icons.star_outline,
+        route: AppRoutes.famousBirthdays,
+      ),
+      _tool(
+        accent: _ToolColors.history,
+        title: 'On This Day',
+        description: 'History by date',
+        icon: Icons.history_outlined,
+        route: AppRoutes.onThisDay,
+      ),
+      _tool(
+        accent: _ToolColors.settings,
+        title: 'Settings',
+        description: 'Theme & preferences',
+        icon: Icons.settings_outlined,
+        route: AppRoutes.settings,
+      ),
+      _tool(
+        accent: _ToolColors.about,
+        title: 'About',
+        description: 'Developer & privacy',
+        icon: Icons.info_outline,
+        route: AppRoutes.about,
+      ),
+    ];
+
+    Widget toolWrap(List<Widget> cards, double width) {
+      final cardWidth = (width - AppSpacing.md) / 2;
+      return Wrap(
+        spacing: AppSpacing.md,
+        runSpacing: AppSpacing.md,
+        children: [
+          for (final card in cards) SizedBox(width: cardWidth, child: card),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const AppEntrance(
+          delay: Duration(milliseconds: 105),
+          child: _SectionLabel(title: 'Tools', icon: Icons.grid_view_rounded),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Text(
+          'Personal',
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        AppEntrance(
+          delay: const Duration(milliseconds: 145),
+          child: LayoutBuilder(
+            builder: (context, constraints) => toolWrap(
+              primaryTools,
+              constraints.maxWidth.clamp(0, 740).toDouble(),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        Text(
+          'Date & more',
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        AppEntrance(
+          delay: const Duration(milliseconds: 180),
+          child: LayoutBuilder(
+            builder: (context, constraints) => toolWrap(
+              utilityTools,
+              constraints.maxWidth.clamp(0, 740).toDouble(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   ToolMenuCard _tool({
     required Color accent,
     required String title,
     required String description,
     required IconData icon,
     required String route,
+    bool featured = false,
     String? target,
   }) {
     return ToolMenuCard(
@@ -318,6 +356,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       title: title,
       description: description,
       icon: icon,
+      featured: featured,
       onTap: () {
         _logAction(target ?? route.replaceFirst('/', ''));
         Navigator.of(context).pushNamed(route);
@@ -396,22 +435,45 @@ class _DashboardHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          dashboard.hasProfile
-              ? name?.isNotEmpty == true
-                    ? 'Today, $name'
-                    : 'Your day at a glance'
-              : AppStrings.appName,
-          style: textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w700,
+        if (dashboard.hasProfile) ...[
+          Text(
+            'Today',
+            style: textTheme.labelMedium?.copyWith(
+              color: scheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.xs),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            name?.isNotEmpty == true ? name! : 'Your day at a glance',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.headlineSmall?.copyWith(
+              fontSize: 28,
+              height: 1.12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+        ] else ...[
+          Text(
+            AppStrings.appName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.headlineSmall?.copyWith(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+        ],
         Text(
           dashboard.hasProfile
-              ? 'Your age, milestones, and what is coming up.'
+              ? 'Your age, milestones, and what’s coming up.'
               : 'Age, date, birthday, and time tools',
-          style: textTheme.bodyLarge?.copyWith(color: scheme.onSurfaceVariant),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
         ),
       ],
     );
@@ -427,27 +489,70 @@ class _SetupCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'Make Age Calculator yours',
-            style: Theme.of(context).textTheme.titleLarge,
+          Row(
+            children: [
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.sm),
+                  child: Icon(
+                    Icons.cake_outlined,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  'Make Age Calculator yours',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: AppSpacing.sm),
           const Text(
             'Set your birthday once to unlock your personalized dashboard.',
           ),
           const SizedBox(height: AppSpacing.md),
-          AppPrimaryButton(
-            label: 'Set My Birthday',
-            icon: Icons.cake_outlined,
-            onPressed: onSetBirthday,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          TextButton(
-            onPressed: onCalculateAge,
-            child: const Text('Calculate an Age'),
+          Wrap(
+            spacing: AppSpacing.xs,
+            runSpacing: AppSpacing.xs,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              FilledButton.icon(
+                onPressed: onSetBirthday,
+                icon: const Icon(Icons.cake_outlined, size: 20),
+                label: const Text('Set My Birthday'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(0, 56),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: onCalculateAge,
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(0, 52),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                  ),
+                ),
+                child: const Text('Calculate an Age'),
+              ),
+            ],
           ),
         ],
       ),
@@ -542,26 +647,40 @@ class _AgeCard extends StatelessWidget {
     final age = dashboard.age!;
     final scheme = Theme.of(context).colorScheme;
     return AppCard(
+      emphasized: true,
       onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Your age today',
-            style: Theme.of(context).textTheme.titleMedium,
+            style: Theme.of(
+              context,
+            ).textTheme.labelLarge?.copyWith(color: scheme.onSurfaceVariant),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            '${age.years} years, ${age.months} months, ${age.days} days',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            '${age.years} ${age.years == 1 ? 'year' : 'years'}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+              fontSize: 38,
               color: scheme.primary,
               fontWeight: FontWeight.w800,
             ),
           ),
+          Text(
+            '${age.months} months · ${age.days} days',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             '${AppDateUtils.formatLargeInteger(age.totalDays)} days lived',
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
           ),
         ],
       ),
@@ -578,21 +697,28 @@ class _BirthdayCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final birthday = dashboard.birthday!;
     return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.cake_outlined),
+          const _MetricLabel(icon: Icons.cake_outlined, label: 'NEXT BIRTHDAY'),
           const SizedBox(height: AppSpacing.sm),
           Text(
             birthday.daysUntilNextBirthday == 0
-                ? 'Happy birthday!'
+                ? 'Today!'
                 : '${birthday.daysUntilNextBirthday} days',
-            style: Theme.of(context).textTheme.titleMedium,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             DateFormat('EEE, d MMM').format(birthday.nextBirthdayDate),
-            style: Theme.of(context).textTheme.bodySmall,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -610,19 +736,29 @@ class _MilestoneCard extends StatelessWidget {
     final milestone = dashboard.nextMilestone!;
     final daysAway = milestone.date.difference(dashboard.now).inDays;
     return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.flag_outlined),
+          const _MetricLabel(
+            icon: Icons.flag_outlined,
+            label: 'NEXT MILESTONE',
+          ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            AppDateUtils.formatLargeInteger(milestone.days),
-            style: Theme.of(context).textTheme.titleMedium,
+            '${AppDateUtils.formatLargeInteger(milestone.days)} days',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             daysAway == 0 ? 'Today' : 'in $daysAway days',
-            style: Theme.of(context).textTheme.bodySmall,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -652,7 +788,12 @@ class _UpcomingCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.title, style: Theme.of(context).textTheme.titleSmall),
+                Text(
+                  item.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
                 Text(
                   DateFormat('EEE, d MMM').format(item.targetDate),
                   style: Theme.of(context).textTheme.bodySmall,
@@ -660,9 +801,23 @@ class _UpcomingCard extends StatelessWidget {
               ],
             ),
           ),
-          Text(
-            item.daysRemaining == 0 ? 'Today' : 'in ${item.daysRemaining}d',
-            style: Theme.of(context).textTheme.labelLarge,
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.secondaryContainer,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              child: Text(
+                item.daysRemaining == 0 ? 'Today' : 'in ${item.daysRemaining}d',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSecondaryContainer,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -680,9 +835,19 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 20),
+        Icon(
+          icon,
+          size: 20,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
         const SizedBox(width: AppSpacing.sm),
-        Text(title, style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ],
     );
   }
@@ -701,10 +866,45 @@ class _ActionChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return ActionChip(
-      avatar: Icon(icon, size: 18),
+      avatar: Icon(icon, size: 18, color: scheme.primary),
       label: Text(label),
       onPressed: onTap,
+      backgroundColor: scheme.surfaceContainerHighest,
+      side: BorderSide.none,
+      shape: const StadiumBorder(),
+      labelStyle: Theme.of(context).textTheme.labelLarge,
+    );
+  }
+}
+
+class _MetricLabel extends StatelessWidget {
+  const _MetricLabel({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: scheme.primary),
+        const SizedBox(width: AppSpacing.xs),
+        Expanded(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.6,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
