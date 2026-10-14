@@ -136,7 +136,10 @@ class _ResultTabsState extends ConsumerState<ResultTabs>
             _buildTabContent(
               index: 1,
               delay: const Duration(milliseconds: 160),
-              child: MilestonesTab(milestones: widget.milestones),
+              child: MilestonesTab(
+                milestones: widget.milestones,
+                birthDate: widget.birthDate,
+              ),
             ),
             _buildTabContent(
               index: 2,

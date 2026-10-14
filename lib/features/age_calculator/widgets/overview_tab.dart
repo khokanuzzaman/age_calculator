@@ -4,6 +4,7 @@ import '../../../core/constants/app_constants.dart';
 import '../models/age_milestone_model.dart';
 import 'birthday_weekday_card.dart';
 import 'life_facts_card.dart';
+import 'life_insights_cards.dart';
 import 'life_stats_card.dart';
 import 'numerology_card.dart';
 import 'zodiac_card.dart';
@@ -25,7 +26,7 @@ class OverviewTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        LifeStatsCard(stats: stats),
+        LifeStatsCard(stats: stats, birthDate: birthDate),
         const SizedBox(height: AppSpacing.base),
         ZodiacCard(birthDate: birthDate),
         const SizedBox(height: AppSpacing.base),
@@ -34,6 +35,8 @@ class OverviewTab extends StatelessWidget {
         LifeFactsCard(totalDays: stats.totalDays),
         const SizedBox(height: AppSpacing.base),
         BirthdayWeekdayCard(details: birthdayDetails),
+        const SizedBox(height: AppSpacing.base),
+        LifeInsightsCard(birthDate: birthDate),
       ],
     );
   }

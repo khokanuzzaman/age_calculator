@@ -28,11 +28,34 @@ class ResultSummaryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'Your age',
-            style: textTheme.labelLarge?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Your age',
+                  style: textTheme.labelLarge?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Copy exact age',
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.copy_outlined, size: 20),
+                onPressed: () async {
+                  final text =
+                      '${result.years} years, ${result.months} months, '
+                      '${result.days} days';
+                  await Clipboard.setData(ClipboardData(text: text));
+                  if (!context.mounted) {
+                    return;
+                  }
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(const SnackBar(content: Text('Age copied')));
+                },
+              ),
+            ],
           ),
           const SizedBox(height: AppSpacing.base),
           Row(

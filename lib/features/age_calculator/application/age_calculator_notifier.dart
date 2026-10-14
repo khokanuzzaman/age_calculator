@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/theme/theme_mode_notifier.dart';
 import '../../../core/analytics/analytics_classification.dart';
 import '../../../core/analytics/analytics_event.dart';
 import '../../../core/analytics/app_analytics.dart';
@@ -47,9 +48,50 @@ class AgeCalculatorState {
 }
 
 class AgeCalculatorNotifier extends Notifier<AgeCalculatorState> {
+  static const _lastBirthDateKey = 'last_birth_date';
+
   @override
   AgeCalculatorState build() {
-    return AgeCalculatorState(asOfDate: AppDateUtils.dateOnly(DateTime.now()));
+    return AgeCalculatorState(
+      asOfDate: AppDateUtils.dateOnly(DateTime.now()),
+      birthDate: _loadLastBirthDate(),
+    );
+  }
+
+  /// Restores the last calculated date of birth. Safe when preferences are not
+  /// available (e.g. unit tests that build the container without an override);
+  /// garbage, pre-1900 and future values are ignored.
+  DateTime? _loadLastBirthDate() {
+    try {
+      final raw = ref
+          .read(sharedPreferencesProvider)
+          .getString(_lastBirthDateKey);
+      if (raw == null) {
+        return null;
+      }
+      final parsed = DateTime.tryParse(raw);
+      if (parsed == null) {
+        return null;
+      }
+      final date = AppDateUtils.dateOnly(parsed);
+      if (date.year < 1900 || AppDateUtils.isAfterDay(date, DateTime.now())) {
+        return null;
+      }
+      return date;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _saveLastBirthDate(DateTime date) {
+    try {
+      ref
+          .read(sharedPreferencesProvider)
+          .setString(_lastBirthDateKey, date.toIso8601String());
+    } catch (_) {
+      // Remembering the date of birth is a convenience and never blocks the
+      // calculation.
+    }
   }
 
   void setBirthDate(DateTime date) {
@@ -95,6 +137,7 @@ class AgeCalculatorNotifier extends Notifier<AgeCalculatorState> {
     }
 
     final result = AppDateUtils.calculateAge(birthDate, asOfDate);
+    _saveLastBirthDate(birthDate);
     state = state.copyWith(result: result, errorMessage: null);
     ref
         .read(appAnalyticsProvider)
